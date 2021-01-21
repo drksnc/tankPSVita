@@ -1,4 +1,0 @@
-INFO: Loading app0://content//sprites//tank.png
-INFO: Object with ID 0 named (null)0
-INFO: Loading app0://content//sprites//tank.png
-INFO: Object with ID 0 named 0
