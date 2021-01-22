@@ -1,5 +1,0 @@
-/usr/local/vitasdk/samples/hello_cpp_world/CMakeFiles/rebuild_cache.dir
-/usr/local/vitasdk/samples/hello_cpp_world/CMakeFiles/edit_cache.dir
-/usr/local/vitasdk/samples/hello_cpp_world/CMakeFiles/hello_cpp_world.vpk.dir
-/usr/local/vitasdk/samples/hello_cpp_world/CMakeFiles/hello_cpp_world.self.dir
-/usr/local/vitasdk/samples/hello_cpp_world/CMakeFiles/hello_cpp_world.dir
