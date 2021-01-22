@@ -20,7 +20,7 @@ class CSettingsParser
     private:
     std::ifstream m_cfg_game;
     int ParseLevelsNumber();
-    void* ParseConfigSection(std::ifstream& config, std::string section, std::string param, PARSE_TYPE type);
+    void* ParseConfigSection(std::ifstream& config, std::string section, std::string param, PARSE_TYPE type, void* default_value = 0);
     int AssignClassForObject(std::string& str_type);
     int m_iNumLvls = 0;
 };

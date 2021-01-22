@@ -74,7 +74,7 @@ int CSettingsParser::ParseLevelsNumber()
     return num;
 }
 
-void* CSettingsParser::ParseConfigSection(ifstream& config, string section, string param, PARSE_TYPE parse_type)
+void* CSettingsParser::ParseConfigSection(ifstream& config, string section, string param, PARSE_TYPE parse_type, void* default_value)
 {
     string cfg_str; 
     bool sect_found = false, param_found = false;
@@ -116,7 +116,7 @@ void* CSettingsParser::ParseConfigSection(ifstream& config, string section, stri
     config.clear();
     config.seekg(0, ios::beg);
 
-    return 0;
+    return default_value;
 }
 
 int CSettingsParser::AssignClassForObject(string& str_type)
