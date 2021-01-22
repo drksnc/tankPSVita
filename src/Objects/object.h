@@ -1,13 +1,16 @@
 #pragma once
 #include <string>
+#include "object_collider.h"
 #include "../Systems/Utils/vector.h"
 #include "pure_object.h"
+#include "systems/Render/render.h"
 
-class SDL_Texture;
+struct RawObject;
 
-class CObject : IPureObject
+class CObject
 {
     public:
+    friend class CLevel;
     CObject();
     virtual ~CObject();
 
@@ -20,7 +23,7 @@ class CObject : IPureObject
         eDirDummy = 0x00000100
     };
 
-    virtual void OnSpawn();
+    virtual void OnSpawn(RawObject* raw_object);
     virtual std::string Name();
     virtual uint8_t ID();
     virtual bool is_Alive();

@@ -49,18 +49,7 @@ void CLevel::InitializeObjects()
             m_objects_pool[id] = CreateObject(raw_obj->eClass);
             CObject* object = m_objects_pool[id];
             object->m_ID = id;
-            object->m_sName = raw_obj->sName;
-            object->m_iHealth = raw_obj->iHealth;
-            object->m_position.set(raw_obj->startPosition.x, raw_obj->startPosition.y);
-            char texture_buf[BUF_SIZE]; sprintf(texture_buf, "%s%s%s", SPRITES_DIR, raw_obj->sSprite.c_str(), PNG_EXT);
-            object->SetTexture(g_Render->LoadTexture(texture_buf));
-            
-            if (raw_obj->eClass == eActor)
-            {
-                SetCurrentControlEntity(m_objects_pool[id]);
-            }
-
-            object->OnSpawn();
+            object->OnSpawn(raw_obj);
         }
     }
 }

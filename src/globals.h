@@ -11,6 +11,8 @@ enum {
 #define CFG_EXT ".cfg"
 #define PNG_EXT ".png"
 #define GAME_CONFIG_PATH "app0:\\content\\configs\\game.cfg"
+#define GAME_FONT_PATH "app0:\\content\\fonts\\arial.ttf"
+#define GAME_FONT_SIZE 14
 #define BUF_SIZE 64
 
 #if DEBUG

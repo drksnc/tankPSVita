@@ -21,22 +21,27 @@ CActor::~CActor()
 
 }
 
-void CActor::OnSpawn()
+void CActor::OnSpawn(RawObject* raw_object)
 {
+    inherited::OnSpawn(raw_object);
+
+    g_Level->SetCurrentControlEntity(this);
+
     if (g_Level->CurrentControlEntity()->ID() == this->ID())
         g_actor = this;
 
     SetVelocity(3);
 }
 
-void CActor::Update()
+void CActor::OnCollide(CObject* who_collide)
 {
-    inherited::Update();
+    m_bColliding = true;
+    inherited::OnCollide(who_collide);
 }
 
 void CActor::OnButtonPressed(int button)
 {
-
+    
 }
 
 void CActor::OnButtonHold(int button)
@@ -96,4 +101,9 @@ void CActor::MoveRight()
 bool CActor::NeedToRender()
 {
     return inherited::NeedToRender();
+}
+
+void CActor::Update()
+{
+    inherited::Update();
 }

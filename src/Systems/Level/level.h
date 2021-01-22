@@ -13,6 +13,7 @@ class CLevel
 
     void Init();
     CObject* getObject(uint8_t obj_id) {return m_objects_pool[obj_id];};
+    void SetCurrentControlEntity(CObject* obj);
     CObject* CurrentControlEntity();
     void Update();
 
@@ -24,5 +25,4 @@ class CLevel
 
     CObject* m_objects_pool[std::numeric_limits<uint8_t>::max()]; //reserve objects pool (npc, doors, chests, etc)
     CObject* m_current_control_entity = NULL;
-    void SetCurrentControlEntity(CObject* obj);
 };

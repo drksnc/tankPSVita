@@ -1,7 +1,9 @@
 #pragma once
 #include "object.h"
 
-class CActor : public CObject
+struct RawObject;
+
+class CActor : virtual public CObject
 {
     typedef CObject inherited;
 
@@ -9,7 +11,7 @@ class CActor : public CObject
     CActor();
     virtual ~CActor();
     
-    virtual void OnSpawn();
+    virtual void OnSpawn(RawObject* raw_object);
     virtual void Update();
     virtual bool NeedToRender();
 
