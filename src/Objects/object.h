@@ -41,6 +41,7 @@ class CObject
             void SetTexture(SDL_Texture* texture) {m_texture = texture;};
 
     virtual bool NeedToRender();
+    virtual bool NeedToDestroy() {return m_bNeedToDestroy;};
 
     virtual Fvector& Position();
     virtual uint8_t Direction();
@@ -59,5 +60,8 @@ class CObject
     SDL_Rect m_Rect;
     Fvector m_position;
     uint8_t m_direction_mask;
+    uint32_t m_uTimeBeforeDestroy;
+    uint32_t m_uDeathTime;
+    bool m_bNeedToDestroy = false;
 
 };

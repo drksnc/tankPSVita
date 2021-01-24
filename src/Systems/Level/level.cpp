@@ -8,6 +8,7 @@
 #include "Objects/bullet.h"
 #include <sdl2/SDL.h>
 #include <cstdio>
+#include <memory>
 
 CObject* CLevel::CreateObject(int type)
 {
@@ -21,7 +22,7 @@ CObject* CLevel::CreateObject(int type)
 
 CLevel::CLevel()
 {
-    
+    m_uObjects_count = 0;
 }
 
 CLevel::~CLevel()
@@ -36,6 +37,8 @@ void CLevel::Init()
     if (!m_cfg_parser)
         m_cfg_parser = new CSettingsParser();
 
+    m_objects_pool.reserve(MaxObjects());
+
     m_cfg_parser->Init();
     m_cfg_parser->ParseLevelsCfg();
     InitializeObjects();
@@ -49,10 +52,11 @@ void CLevel::InitializeObjects()
         if (id < g_RawLevels[0].raw_objects.size())
         {
             auto raw_obj = &g_RawLevels[0].raw_objects[id];
-            m_objects_pool[id] = CreateObject(raw_obj->eClass);
+            m_objects_pool.push_back(CreateObject(raw_obj->eClass));
             CObject* object = m_objects_pool[id];
             object->m_ID = id;
             object->OnSpawn(raw_obj);
+            ++m_uObjects_count;
         }
     }
 }
@@ -65,6 +69,8 @@ void CLevel::InitializeBG()
 
 void CLevel::Update()
 {
+    FreeObjectPool();
+
     for (auto it : m_objects_pool)
         if (it) it->Update();
 }
@@ -120,4 +126,18 @@ void CLevel::CreateBullet(CObject* owner)
 
     bullet->OnSpawn(&raw_bullet);
 }
+
+void CLevel::FreeObjectPool()
+{
+    for (auto I = m_objects_pool.begin(); 
+              I < m_objects_pool.end(); ++I)
+    {
+        CObject* object = *I;
+
+        if (object && object->NeedToDestroy())
+        {
+            m_objects_pool.erase(I);
+            delete object;
+        }
+    }
 }

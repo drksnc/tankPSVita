@@ -3,6 +3,7 @@
 
 class SDL_Texture;
 class Fvector;
+class CObject;
 
 class IPureObject
 {
@@ -18,6 +19,7 @@ class IPureObject
     virtual bool NeedToRender() = 0;
     virtual Fvector& Position() = 0;
     virtual uint8_t Direction() = 0;
+    virtual void OnCollide(CObject* who_collide) = 0;
 
     virtual void OnSpawn() = 0;
 };

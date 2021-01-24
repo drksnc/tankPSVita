@@ -40,10 +40,13 @@ struct RawLevel
     std::vector<RawObject> raw_objects;
 };
 
+uint32_t CurrentFrame();
+
 extern CControls* g_Control;
 extern CLevel* g_Level;
 
 extern CRender* g_Render;
 extern std::vector<RawLevel> g_RawLevels;
+extern uint32_t g_CurrentFrame;
 
 extern bool    g_bExit;
