@@ -15,6 +15,8 @@ CObject::CObject()
 
 CObject::~CObject()
 {
+    SDL_LogMessage(0, SDL_LogPriority::SDL_LOG_PRIORITY_INFO, "Deleteting CObject %u", ID());
+    if (m_object_collider)
     delete m_object_collider;
 }
 
@@ -30,8 +32,21 @@ void CObject::OnSpawn(RawObject* raw_object)
     m_object_collider = new CObjectCollider(this);
 }
 
-void CObject::OnSpawn()
+void CObject::OnCollide(CObject* who_collide, CObjectCollider::CollisionSide collision_side)
 {
+    if (!who_collide)
+        return;
+
+    if (dynamic_cast<CBullet*>(who_collide)) // we handle this in OnHit method
+        return;
+
+    m_bIsColliding = true;
+}
+
+void CObject::AfterCollide()
+{
+    m_bIsColliding = false;
+}
 
 }
 

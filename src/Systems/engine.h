@@ -29,12 +29,14 @@ struct RawObject
     eObjectType eClass;
     std::string sSprite;
     int iHealth;
+    int iCollideOff;
     Fvector startPosition;
 };
 
 struct RawLevel
 {
     int iLvlId = 0;
+    std::string background_texture;
     std::vector<RawObject> raw_objects;
 };
 

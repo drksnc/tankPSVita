@@ -5,6 +5,7 @@
 #include "Systems/Utils/vector.h"
 #include <sdl2/SDL.h>
 #include "Systems/Level/level.h"
+#include "systems/Render/render.h"
 
 const int g_iSpeed = 1;
 
@@ -33,10 +34,16 @@ void CActor::OnSpawn(RawObject* raw_object)
     SetVelocity(3);
 }
 
-void CActor::OnCollide(CObject* who_collide)
+void CActor::OnCollide(CObject* who_collide, collision_side collision_side)
 {
-    m_bColliding = true;
-    inherited::OnCollide(who_collide);
+    inherited::OnCollide(who_collide, collision_side);
+    m_CollisionSide |= collision_side;
+}
+
+void CActor::AfterCollide()
+{
+    inherited::AfterCollide();
+    m_CollisionSide = CObjectCollider::eCSNone;
 }
 
 void CActor::OnButtonPressed(int button)
@@ -68,6 +75,10 @@ void CActor::MoveUp()
         return;
 
     SetDirection(eDirUp);
+
+    if (IsColliding() && m_CollisionSide & (collision_side::eCSTop))
+        return;
+
     Position().y -= g_iSpeed * m_iVelocity; 
 }
 
@@ -77,6 +88,10 @@ void CActor::MoveDown()
         return;
 
     SetDirection(eDirDown);
+
+    if (IsColliding() && m_CollisionSide & (collision_side::eCSBottom))
+        return;
+
     Position().y += g_iSpeed * m_iVelocity; 
 }
 
@@ -84,8 +99,12 @@ void CActor::MoveLeft()
 {
     if (g_Control->ControlData().buttons & (SCE_CTRL_UP | SCE_CTRL_DOWN | SCE_CTRL_RIGHT))
         return;
-    
+
     SetDirection(eDirLeft);
+
+    if (IsColliding() && m_CollisionSide & (collision_side::eCSLeft))
+        return;
+
     Position().x -= g_iSpeed * m_iVelocity;
 }
 
@@ -93,8 +112,12 @@ void CActor::MoveRight()
 {
     if (g_Control->ControlData().buttons & (SCE_CTRL_UP | SCE_CTRL_DOWN | SCE_CTRL_LEFT))
         return;
-    
+
     SetDirection(eDirRight);
+
+    if (IsColliding() && m_CollisionSide & (collision_side::eCSRight))
+        return;
+
     Position().x += g_iSpeed * m_iVelocity;
 }
 

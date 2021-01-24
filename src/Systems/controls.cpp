@@ -46,7 +46,7 @@ void CControls::PollControls()
 void CControls::ProcControls(int mask)
 {
     if (!g_Level)
-        return;
+      return;
 
     if (m_ctrldata.buttons & mask)
       m_uOldButtons & mask ?  OnButtonHold(mask) : OnButtonPressed(mask);

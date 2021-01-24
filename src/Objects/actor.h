@@ -14,12 +14,14 @@ class CActor : virtual public CObject
     virtual void OnSpawn(RawObject* raw_object);
     virtual void Update();
     virtual bool NeedToRender();
-
+    
     void OnButtonPressed(int button);
     void OnButtonHold(int button);
     void OnButtonReleased(int button);
 
     int Velocity() {return m_iVelocity;};
+    virtual void OnCollide(CObject* who_collide, CObjectCollider::CollisionSide collision_side);
+    virtual void AfterCollide();
 
     private:
     void MoveUp();
@@ -28,8 +30,9 @@ class CActor : virtual public CObject
     void MoveRight();
 
     protected:
-    int m_iVelocity = 3;
-    void SetVelocity(int value) {m_iVelocity = value;};
+    int m_iVelocity = 1;
+    int m_iPreviousVelocity = m_iVelocity;
+    void SetVelocity(int value) {m_iPreviousVelocity = m_iVelocity; m_iVelocity = value;};
 };
 
 CActor* Actor();

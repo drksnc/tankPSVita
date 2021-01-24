@@ -26,10 +26,18 @@ class CObject
     virtual void OnSpawn(RawObject* raw_object);
     virtual std::string Name();
     virtual uint8_t ID();
+    virtual uint8_t Health() {return m_iHealth;};
     virtual bool is_Alive();
+
+    virtual void OnCollide(CObject* who_collide, CObjectCollider::CollisionSide collision_side);
+    virtual void OnHit(CObject* who_hit, int damage);
+    virtual void AfterCollide();
+    virtual bool IsColliding() {return m_bIsColliding;};
+    virtual uint8_t ColliderOffset() {return m_iColliderOff;};
 
     virtual void Update();
     virtual SDL_Texture* Texture();
+    virtual SDL_Rect& Rect();
             void SetTexture(SDL_Texture* texture) {m_texture = texture;};
 
     virtual bool NeedToRender();
@@ -37,18 +45,19 @@ class CObject
     virtual Fvector& Position();
     virtual uint8_t Direction();
 
+
     protected:
+    CObjectCollider* m_object_collider;
+    uint8_t m_iHealth;
+    uint8_t m_iColliderOff = 0;
+    bool m_bIsColliding = false;    
     void SetDirection(eDirection dir);
 
-    private:
-    uint8_t m_iHealth;
     uint8_t m_ID;
     std::string m_sName;
     SDL_Texture* m_texture;
+    SDL_Rect m_Rect;
     Fvector m_position;
     uint8_t m_direction_mask;
-    
-
-    friend class CLevel;
 
 };

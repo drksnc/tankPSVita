@@ -7,42 +7,61 @@
 #include "Systems/engine.h"
 #include "SDL2/sdl.h"
 
-bool CObjectCollider::IsCollide(CObject* objectA, CObject* objectB)
+bool CObjectCollider::IsIntersects(CObject* objectA, CObject* objectB, CollisionSide& side)
 {
     SDL_Rect& rectA = objectA->Rect();
     SDL_Rect& rectB = objectB->Rect();
 
-    int offset = objectA->ColliderOffset();
-ssssss
-    int LeftA = rectA.x;
-    int BottomA = rectA.y + rectA.h;
-    int RightA = rectA.x + rectA.w;
-    int TopA = rectA.y;
+    //Get center
+    int CenterAX = objectA->Position().x + objectA->Rect().w / 2;
+    int CenterAY = objectA->Position().y + objectA->Rect().h / 2;
 
-    int LeftB = rectB.x;
-    int BottomB = rectB.y + rectB.h;
-    int RightB = rectB.x + rectB.w;
-    int TopB = rectB.y;
+    int CenterBX = objectB->Position().x + objectB->Rect().w / 2;
+    int CenterBY = objectB->Position().y + objectB->Rect().h / 2;
 
-    if (BottomA + offset <= TopB) return false;
-    if (RightA - offset <= LeftB) return false;
-    if (TopA + offset >= BottomB) return false;
-    if (LeftA - offset >= RightB) return false;
+    float w = 0.5 * (rectA.w + rectB.w);
+    float h = 0.5 * (rectA.h + rectB.h);
 
-    return true;
+    float dx = CenterAX - CenterBX;
+    float dy = CenterAY - CenterBY;
+
+    int offsetX = 0; int offsetY = 0;
+
+    if (abs(dx) <= w - offsetX && abs(dy) <= h - offsetY)
+    {
+        float wy = w * dy;
+        float hx = h * dx;
+
+        if (wy > hx)
+            side = wy > -hx ? eCSTop : eCSRight;
+        else
+            side = wy > -hx ? eCSLeft : eCSBottom;
+
+        return true;
+    }
+
+    return false;
 }
 
 void CObjectCollider::Update()
 {
-    for (int i = 0; i < 255; ++i)
+    int collide_count = 0;
+
+    for (int i = 0; i < g_Level->MaxObjects(); ++i)
     {
         auto obj = g_Level->getObject(i);
         if (!obj) continue;
+        if (!obj->is_Alive()) continue;
         if (obj->ID() == m_object->ID()) continue;
 
-        if (IsCollide(m_object, obj))
+        CollisionSide collision_side;
+        if (IsIntersects(m_object, obj, collision_side))
         {
-            m_object->OnCollide(obj);
+            m_object->OnCollide(obj, collision_side);
+            collide_count++;
         }
     }
+
+    if (collide_count == 0 && m_object->IsColliding())
+        m_object->AfterCollide();
 }

@@ -11,10 +11,19 @@ class CObjectCollider
         m_object = base_object;
     }
 
+    enum CollisionSide
+    {
+        eCSTop = 1,
+        eCSBottom = 2,
+        eCSLeft = 4,
+        eCSRight = 8,
+        eCSNone = 16
+    };
+
     void Update();
 
     CObject* m_object;
 
     private:
-    bool IsCollide(CObject* objectA, CObject* objectB);
+    bool IsIntersects(CObject* objectA, CObject* objectB, CollisionSide& side) ;
 };
