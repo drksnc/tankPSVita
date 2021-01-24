@@ -6,15 +6,19 @@
 #include <sdl2/SDL.h>
 #include "Systems/Level/level.h"
 #include "systems/Render/render.h"
+#include "Objects/bullet.h"
 
 const int g_iSpeed = 1;
+
+typedef CObjectCollider::CollisionSide collision_side;
 
 CActor* g_actor = NULL;
 CActor* Actor() {return g_actor;};
 
 CActor::CActor()
 {
-
+    m_shoot_cooldown = 100;
+    m_last_time_shot = m_shoot_cooldown;
 }
 
 CActor::~CActor()
@@ -48,7 +52,12 @@ void CActor::AfterCollide()
 
 void CActor::OnButtonPressed(int button)
 {
-    
+    switch (button)
+    {
+    case SCE_CTRL_SQUARE: Shoot(); break;
+    default:
+        break;
+    }
 }
 
 void CActor::OnButtonHold(int button)
@@ -67,6 +76,16 @@ void CActor::OnButtonHold(int button)
 void CActor::OnButtonReleased(int button)
 {
 
+}
+
+void CActor::Shoot()
+{
+    if (CurrentFrame() - m_last_time_shot < m_shoot_cooldown)
+        return;
+
+    g_Level->CreateBullet(this);
+
+    m_last_time_shot = CurrentFrame();
 }
 
 void CActor::MoveUp()

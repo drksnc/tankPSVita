@@ -57,7 +57,9 @@ add_executable(${PROJECT_NAME}
   src/Systems/Utils/vector.cpp
   src/Systems/Utils/config_parser.cpp
   src/Objects/object.cpp
+  src/Objects/bullet.cpp
   src/Objects/actor.cpp
+  src/Objects/object_collider.cpp
   src/main.cpp
 )
 
@@ -101,7 +103,11 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} ${PROJECT_NAME}.self
   FILE content/sprites/props/barrel.png content/sprites/props/barrel.png
   FILE content/sprites/actor.png content/sprites/actor.png
   FILE content/sprites/tank.png content/sprites/tank.png
+  FILE content/sprites/bullet.png content/sprites/bullet.png
+  FILE content/sprites/bg/bg0.png content/sprites/bg/bg0.png
   FILE content/configs/levels/level0.cfg content/configs/levels/level0.cfg
   FILE content/configs/levels/level1.cfg content/configs/levels/level1.cfg
   FILE content/configs/game.cfg content/configs/game.cfg
+  FILE content/fonts/arial.ttf content/fonts/arial.ttf
+  FILE content/fonts/landasans.ttf content/fonts/landasans.ttf
 )

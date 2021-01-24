@@ -5,6 +5,7 @@
 #include "Systems/Utils/config_parser.h"
 #include "objects/actor.h"
 #include "Objects/object.h"
+#include "Objects/bullet.h"
 #include <sdl2/SDL.h>
 #include <cstdio>
 
@@ -77,4 +78,46 @@ void CLevel::SetCurrentControlEntity(CObject* obj)
 CObject* CLevel::CurrentControlEntity()
 {
     return m_current_control_entity;
+}
+
+void CLevel::CreateBullet(CObject* owner)
+{
+    if (!owner || !owner->is_Alive())
+    {
+        SDL_LogMessage(0, SDL_LogPriority::SDL_LOG_PRIORITY_WARN, "[%u] Can't create Bullet - owner is dead", CurrentFrame());
+        return;        
+    }
+
+    if (m_uObjects_count >= MaxObjects())
+    {
+        SDL_LogMessage(0, SDL_LogPriority::SDL_LOG_PRIORITY_WARN, "[%u] Can't create Bullet - no free memory", CurrentFrame());
+        return;
+    }
+
+    CBullet* bullet = new CBullet(owner);
+    m_objects_pool.push_back(bullet);
+    bullet->m_ID = m_uObjects_count++;
+
+    RawObject raw_bullet;
+    raw_bullet.iHealth = 1;
+    raw_bullet.eClass = eShoot;
+    raw_bullet.sName = "bullet";
+    raw_bullet.sSprite = BULLET_SPRITE_ALIAS;
+
+    uint8_t owner_direction = owner->Direction();
+    Fvector start_pos;
+
+    if (owner_direction & CObject::eDirRight)
+        start_pos.set(owner->Position().x + owner->Rect().w, owner->Position().y + owner->Rect().h / 2);
+    else if (owner_direction & CObject::eDirLeft)
+        start_pos.set(owner->Position().x, owner->Position().y + owner->Rect().h / 2);
+    else if (owner_direction & CObject::eDirUp)
+        start_pos.set(owner->Position().x + owner->Rect().w / 2, owner->Position().y);
+    else if (owner_direction & CObject::eDirDown)
+        start_pos.set(owner->Position().x + owner->Rect().w / 2, owner->Position().y + owner->Rect().h);   
+
+    raw_bullet.startPosition = start_pos;
+
+    bullet->OnSpawn(&raw_bullet);
+}
 }

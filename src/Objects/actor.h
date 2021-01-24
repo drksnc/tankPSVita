@@ -29,6 +29,12 @@ class CActor : virtual public CObject
     void MoveLeft();
     void MoveRight();
 
+    void Shoot();
+
+    uint8_t m_CollisionSide = 0;
+    uint8_t m_shoot_cooldown;
+    uint32_t m_last_time_shot;
+
     protected:
     int m_iVelocity = 1;
     int m_iPreviousVelocity = m_iVelocity;

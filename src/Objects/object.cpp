@@ -1,6 +1,7 @@
 #include "object.h"
 #include "sdl2/sdl.h"
 #include "systems/engine.h"
+#include "bullet.h"
 #include "actor.h"
 #include "globals.h"
 
@@ -10,7 +11,7 @@ CObject::CObject()
     m_texture = NULL;
     m_iHealth = 0;
     m_direction_mask = eDirDummy;
-    //m_object_collider = NULL;
+    m_uTimeBeforeDestroy = 0;
 }
 
 CObject::~CObject()
@@ -30,6 +31,7 @@ void CObject::OnSpawn(RawObject* raw_object)
     SetTexture(g_Render->LoadTexture(texture_buf));
 
     m_object_collider = new CObjectCollider(this);
+    m_uTimeBeforeDestroy = 50;
 }
 
 void CObject::OnCollide(CObject* who_collide, CObjectCollider::CollisionSide collision_side)
@@ -48,6 +50,15 @@ void CObject::AfterCollide()
     m_bIsColliding = false;
 }
 
+void CObject::OnHit(CObject* who_hit, int dmg)
+{
+    if (m_iHealth < dmg)
+    {
+        m_iHealth = 0;
+        m_uDeathTime = CurrentFrame();  
+    }
+    else
+        m_iHealth -= dmg;
 }
 
 std::string CObject::Name()
@@ -101,5 +112,12 @@ bool CObject::NeedToRender()
 
 void CObject::Update()
 {
-   
+    if (!is_Alive())
+    {
+        if (CurrentFrame() - m_uDeathTime < m_uTimeBeforeDestroy)
+            m_bNeedToDestroy = true;          
+        return;
+    }
+
+    m_object_collider->Update();
 }
