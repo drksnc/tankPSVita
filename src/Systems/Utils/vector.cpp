@@ -1,9 +1,10 @@
 #include "vector.h"
 #include <cmath>
 
-void Fvector::set(int _x, int _y)
+Fvector& Fvector::set(int _x, int _y)
 {
     x = _x; y = _y;
+    return *this;
 }
 
 Fvector& Fvector::sub(Fvector& vec)

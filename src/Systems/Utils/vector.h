@@ -5,7 +5,7 @@ class Fvector
     public:
     int x = 0; int y = 0;
 
-    void set(int _x, int _y);
+    Fvector& set(int _x, int _y);
     Fvector& sub(Fvector& vec);
     int distance_to(Fvector& vec);
 };
