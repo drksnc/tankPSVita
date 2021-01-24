@@ -25,6 +25,7 @@ CLevel::CLevel()
 
 CLevel::~CLevel()
 {
+    g_Render->DestroyTexture(m_BGTexture);
     m_current_control_entity = NULL;
     delete m_cfg_parser;
 }
@@ -37,11 +38,12 @@ void CLevel::Init()
     m_cfg_parser->Init();
     m_cfg_parser->ParseLevelsCfg();
     InitializeObjects();
+    InitializeBG();
 }
 
 void CLevel::InitializeObjects()
 {
-    for (uint8_t id = 0; id < std::numeric_limits<uint8_t>::max(); ++id)
+    for (uint8_t id = 0; id < MaxObjects(); ++id)
     {
         if (id < g_RawLevels[0].raw_objects.size())
         {
@@ -52,6 +54,12 @@ void CLevel::InitializeObjects()
             object->OnSpawn(raw_obj);
         }
     }
+}
+
+void CLevel::InitializeBG()
+{
+    char bg_texture_buf[BUF_SIZE]; sprintf(bg_texture_buf, "%s%s%s", BG_DIR, g_RawLevels[0].background_texture.c_str(), PNG_EXT);
+    m_BGTexture = g_Render->LoadTexture(bg_texture_buf); 
 }
 
 void CLevel::Update()
