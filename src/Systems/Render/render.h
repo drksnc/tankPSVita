@@ -27,6 +27,11 @@ class CRender
 
     void Render();
 
+    void RenderRect(CObject* obj);
+    void RenderDebugInfo(CObject* obj);
+
+    void SetText(std::string text, Fvector pos);
+
     private:
     void RenderBackground();
     void QueryTexture(SDL_Texture* texture, SDL_Rect& rect, Fvector& pos, uint8_t direction);

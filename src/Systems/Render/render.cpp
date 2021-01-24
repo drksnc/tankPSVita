@@ -17,7 +17,7 @@ CRender::CRender()
 CRender::~CRender()
 {
     //Destroy all object's texture first
-    for (uint8_t it = 0; it < std::numeric_limits<uint8_t>::max(); ++it)
+    for (uint8_t it = 0; it < g_Level->MaxObjects(); ++it)
     {
         CObject* object = g_Level->getObject(it);
         if (object) DestroyTexture(object->Texture());
@@ -75,18 +75,21 @@ void CRender::Render()
         if (!object)
             continue;
 
+        if (object->NeedToRender())
+            QueryTexture(object->Texture(), object->Rect(), object->Position(), object->Direction());
+
 #if DEBUG
         RenderDebugInfo(object);
 #endif
-            
-        if (object->NeedToRender())
-            QueryTexture(object->Texture(), object->Rect(), object->Position(), object->Direction());
     }
 
     SDL_RenderPresent(m_Renderer);
     SDL_Delay(16);
+
+    g_CurrentFrame++;
 }
 
+SDL_Texture* CRender::LoadTexture(const char* filename)
 {
 	SDL_Texture *texture;
 
@@ -128,11 +131,14 @@ double CRender::GetSpriteAngleByDirection(uint8_t direction)
 
 void CRender::SetText(std::string text, Fvector pos)
 {
-    SDL_Color color = { 0, 0, 0 };
+    SDL_Color color = { 0, 0, 255 };
     SDL_Surface* text_surface = TTF_RenderText_Solid(m_font, text.c_str(), color);
     SDL_Texture* text_texture = SDL_CreateTextureFromSurface(m_Renderer, text_surface);
     SDL_Rect dest = { pos.x, pos.y, text_surface->w, text_surface->h };
     SDL_RenderCopy(m_Renderer, text_texture, NULL, &dest);
+
+    //SDL_FreeSurface(text_surface);
+    //SDL_DestroyTexture(text_texture);
 }
 
 void CRender::RenderBackground()
@@ -140,4 +146,24 @@ void CRender::RenderBackground()
     SDL_QueryTexture(g_Level->BackgroundTexture(), NULL, NULL, NULL, NULL);
     SDL_RenderCopy(m_Renderer, g_Level->BackgroundTexture(), NULL, NULL);
 }
+
+void CRender::RenderRect(CObject* obj)
+{
+    SDL_SetRenderDrawColor(g_Render->Renderer(), 0, 0, 255, SDL_ALPHA_OPAQUE);
+
+    SDL_RenderDrawLine(g_Render->Renderer(), obj->Rect().x, obj->Rect().y, obj->Rect().x + obj->Rect().w, obj->Rect().y);
+    SDL_RenderDrawLine(g_Render->Renderer(), obj->Rect().x, obj->Rect().y, obj->Rect().x, obj->Rect().y + obj->Rect().h);
+    SDL_RenderDrawLine(g_Render->Renderer(), obj->Rect().x + obj->Rect().w, obj->Rect().y + obj->Rect().h, (obj->Rect().x + obj->Rect().w) - obj->Rect().w, obj->Rect().y + obj->Rect().h);
+    SDL_RenderDrawLine(g_Render->Renderer(), obj->Rect().x + obj->Rect().w, obj->Rect().y + obj->Rect().h, obj->Rect().x + obj->Rect().w, (obj->Rect().y + obj->Rect().h) - obj->Rect().h);
+}
+
+void CRender::RenderDebugInfo(CObject* obj)
+{
+    char hp[BUF_SIZE]; sprintf(hp, "Health %i", obj->Health());
+    char pos[BUF_SIZE]; sprintf(pos, "Pos Y %i X %i", obj->Position().x, obj->Position().y);
+    char frame[BUF_SIZE]; sprintf(frame, "Frame %u", CurrentFrame());
+    SetText(hp, Fvector().set(obj->Position().x, obj->Position().y - 15));
+    //SetText(pos, Fvector().set(obj->Position().x, obj->Position().y - 30));
+    //SetText(frame, Fvector().set(obj->Position().x, obj->Position().y - 45));
+    RenderRect(obj);
 }
