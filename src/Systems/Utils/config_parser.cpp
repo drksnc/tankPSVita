@@ -12,6 +12,8 @@
 
 using namespace std;
 
+#define SETTINGS_SECT "settings"
+
 CSettingsParser::~CSettingsParser()
 {
     m_cfg_game.close();
@@ -35,8 +37,13 @@ int CSettingsParser::ParseLevelsCfg()
         snprintf(buf, BUF_SIZE, "%s%s%d%s", LEVELS_DIR, "level", i, CFG_EXT);
         ifstream cfg_lvl(buf);
         
-        int num_obj = (int)ParseConfigSection(cfg_lvl, "settings", "objects", eInt);
+        int num_obj = (int)ParseConfigSection(cfg_lvl, SETTINGS_SECT, "objects", eInt);
+        char default_bg[4] = "bg0";
+        string bg_texture = (char*)ParseConfigSection(cfg_lvl, SETTINGS_SECT, "background", eStr, default_bg);
         g_RawLevels[i].raw_objects.resize(num_obj);
+
+        g_RawLevels[i].iLvlId = i;
+        g_RawLevels[i].background_texture = bg_texture;
 
         for (j = 0; j < num_obj; j++)
         {
@@ -46,17 +53,20 @@ int CSettingsParser::ParseLevelsCfg()
             string sSprite = (char*)ParseConfigSection(cfg_lvl, buf, "sprite", eStr);
             string sPos    = (char*)ParseConfigSection(cfg_lvl, buf, "start_pos", eStr);
             int hp         = (int)ParseConfigSection(cfg_lvl, buf, "hp", eInt);
+            int collide_off = (int)ParseConfigSection(cfg_lvl, buf, "collide_offset", eInt);
             int posX, posY; 
             sscanf(sPos.c_str(), "%d, %d", &posX, &posY);
 
             SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Parsed object with CLASS [%s]; SPRITE [%s]; POS [%d %d]; HP [%d] for LEVEL [%d]", 
                 sClass.c_str(), sSprite.c_str(), posX, posY, hp, i);
 
-            g_RawLevels[i].raw_objects[j].sName = buf; //object0, object1, etc
-            g_RawLevels[i].raw_objects[j].eClass = (eObjectType)AssignClassForObject(sClass);
-            g_RawLevels[i].raw_objects[j].sSprite = sSprite;
-            g_RawLevels[i].raw_objects[j].iHealth = hp;
-            g_RawLevels[i].raw_objects[j].startPosition.set(posX, posY);
+            RawObject* raw_obj = &g_RawLevels[i].raw_objects[j];
+            raw_obj->sName = buf; //object0, object1, etc
+            raw_obj->eClass = (eObjectType)AssignClassForObject(sClass);
+            raw_obj->sSprite = sSprite;
+            raw_obj->iHealth = hp;
+            raw_obj->iCollideOff = collide_off;
+            raw_obj->startPosition.set(posX, posY);
         }
 
         cfg_lvl.close();
