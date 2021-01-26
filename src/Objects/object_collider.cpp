@@ -49,15 +49,15 @@ void CObjectCollider::Update()
 
     for (int i = 0; i < g_Level->MaxObjects(); ++i)
     {
-        auto obj = g_Level->getObject(i);
-        if (!obj) continue;
-        if (!obj->is_Alive()) continue;
-        if (obj->ID() == m_object->ID()) continue;
+        auto pObj = g_Level->getObject(i);
+        if (!pObj) continue;
+        if (!pObj->is_Alive()) continue;
+        if (pObj->ID() == m_object->ID()) continue;
 
         CollisionSide collision_side;
-        if (IsIntersects(m_object, obj, collision_side))
+        if (IsIntersects(m_object, pObj, collision_side))
         {
-            m_object->OnCollide(obj, collision_side);
+            m_object->OnCollide(pObj, collision_side);
             collide_count++;
         }
     }

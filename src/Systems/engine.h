@@ -11,6 +11,8 @@ class SDL_Window;
 class SDL_Renderer;
 class CRender;
 
+static const int g_iSpeed = 1;
+
 enum eObjectType
 {
     eActor = 0,
@@ -48,5 +50,4 @@ extern CLevel* g_Level;
 extern CRender* g_Render;
 extern std::vector<RawLevel> g_RawLevels;
 extern uint32_t g_CurrentFrame;
-
 extern bool    g_bExit;

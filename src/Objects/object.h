@@ -4,6 +4,7 @@
 #include "../Systems/Utils/vector.h"
 #include "pure_object.h"
 #include "systems/Render/render.h"
+#include "systems/engine.h"
 
 struct RawObject;
 
@@ -28,6 +29,7 @@ class CObject
     virtual uint8_t ID();
     virtual uint8_t Health() {return m_iHealth;};
     virtual bool is_Alive();
+    virtual void Die();
 
     virtual void OnCollide(CObject* who_collide, CObjectCollider::CollisionSide collision_side);
     virtual void OnHit(CObject* who_hit, int damage);

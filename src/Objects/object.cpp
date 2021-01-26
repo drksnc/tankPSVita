@@ -1,24 +1,22 @@
 #include "object.h"
 #include "sdl2/sdl.h"
-#include "systems/engine.h"
 #include "bullet.h"
 #include "actor.h"
 #include "globals.h"
+#include "enemy.h"
 
 CObject::CObject()
 {
     m_sName = "undefined";
     m_texture = NULL;
-    m_iHealth = 0;
+    m_iHealth = 1;
     m_direction_mask = eDirDummy;
     m_uTimeBeforeDestroy = 0;
 }
 
 CObject::~CObject()
 {
-    SDL_LogMessage(0, SDL_LogPriority::SDL_LOG_PRIORITY_INFO, "Deleteting CObject %u", ID());
-    if (m_object_collider)
-    delete m_object_collider;
+    if (m_object_collider) delete m_object_collider;
 }
 
 void CObject::OnSpawn(RawObject* raw_object)
@@ -31,7 +29,9 @@ void CObject::OnSpawn(RawObject* raw_object)
     SetTexture(g_Render->LoadTexture(texture_buf));
 
     m_object_collider = new CObjectCollider(this);
-    m_uTimeBeforeDestroy = 50;
+    m_uTimeBeforeDestroy = 100;
+
+    SetDirection(eDirUp);
 }
 
 void CObject::OnCollide(CObject* who_collide, CObjectCollider::CollisionSide collision_side)
@@ -52,11 +52,8 @@ void CObject::AfterCollide()
 
 void CObject::OnHit(CObject* who_hit, int dmg)
 {
-    if (m_iHealth < dmg)
-    {
-        m_iHealth = 0;
-        m_uDeathTime = CurrentFrame();  
-    }
+    if (m_iHealth <= dmg)
+        Die();
     else
         m_iHealth -= dmg;
 }
@@ -97,6 +94,12 @@ void CObject::SetDirection(eDirection dir)
     m_direction_mask |= dir;
 }
 
+void CObject::Die()
+{
+    m_iHealth = 0; 
+    m_uDeathTime = CurrentFrame();
+}
+
 bool CObject::is_Alive()
 {
     return m_iHealth > 0;
@@ -115,9 +118,12 @@ void CObject::Update()
     if (!is_Alive())
     {
         if (CurrentFrame() - m_uDeathTime < m_uTimeBeforeDestroy)
-            m_bNeedToDestroy = true;          
+        {
+            m_bNeedToDestroy = true; 
+        }
+
         return;
     }
-
+    
     m_object_collider->Update();
 }

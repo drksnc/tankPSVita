@@ -8,8 +8,6 @@
 #include "systems/Render/render.h"
 #include "Objects/bullet.h"
 
-const int g_iSpeed = 1;
-
 typedef CObjectCollider::CollisionSide collision_side;
 
 CActor* g_actor = NULL;
@@ -80,11 +78,13 @@ void CActor::OnButtonReleased(int button)
 
 void CActor::Shoot()
 {
+    if (!is_Alive())
+        return;
+
     if (CurrentFrame() - m_last_time_shot < m_shoot_cooldown)
         return;
 
-    g_Level->CreateBullet(this);
-
+    CBullet* bullet = g_Level->CreateBullet(this);
     m_last_time_shot = CurrentFrame();
 }
 

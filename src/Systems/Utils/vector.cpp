@@ -17,3 +17,8 @@ int Fvector::distance_to(Fvector& vec)
 {
     return abs(x-vec.x + y-vec.y);
 }
+
+bool Fvector::equals(Fvector& vec)
+{
+    return x == vec.x && y == vec.y;
+}
