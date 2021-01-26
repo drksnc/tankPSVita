@@ -21,7 +21,7 @@ class CLevel
     void Update();
 
     SDL_Texture* BackgroundTexture() {return m_BGTexture;};
-    void CreateBullet(CObject* owner);
+    CBullet* CreateBullet(CObject* owner);
 
     private:
     void InitializeObjects();

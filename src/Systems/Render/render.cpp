@@ -11,16 +11,14 @@ using namespace std;
 
 CRender::CRender()
 {
-
+    m_texture_pool.clear();
 }
 
 CRender::~CRender()
 {
-    //Destroy all object's texture first
-    for (uint8_t it = 0; it < g_Level->MaxObjects(); ++it)
+    for (auto &it : m_texture_pool)
     {
-        CObject* object = g_Level->getObject(it);
-        if (object) DestroyTexture(object->Texture());
+        DestroyTexture(it.second);
     }
 
     TTF_CloseFont(m_font);
@@ -68,13 +66,11 @@ void CRender::Render()
 
     RenderBackground();
 
-    for (uint8_t it = 0; it < std::numeric_limits<uint8_t>::max(); ++it)
+    for (uint8_t it = 0; it < g_Level->MaxObjects(); ++it)
     {
         CObject* object = g_Level->getObject(it);
 
-        if (!object)
-            continue;
-
+        if (!object) continue;
         if (object->NeedToRender())
             QueryTexture(object->Texture(), object->Rect(), object->Position(), object->Direction());
 
@@ -89,16 +85,25 @@ void CRender::Render()
     g_CurrentFrame++;
 }
 
-SDL_Texture* CRender::LoadTexture(const char* filename)
+SDL_Texture* CRender::LoadTexture(std::string filename)
 {
-	SDL_Texture *texture;
+	SDL_Texture *pTexture = NULL;
 
+    auto it = m_texture_pool.find(filename);
+    if (it != m_texture_pool.end())
+    {
+        pTexture = (*it).second;
+    }
+    else
+    {
 #if DEBUG
-	SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Loading %s", filename);
+	    SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Loading %s", filename.c_str());
 #endif
-	texture = IMG_LoadTexture(m_Renderer, filename);
-    
-	return texture;
+	    pTexture = IMG_LoadTexture(m_Renderer, filename.c_str());
+        m_texture_pool.insert(std::make_pair(filename, pTexture));
+    }
+
+	return pTexture;
 }
 
 void CRender::DestroyTexture(SDL_Texture* texture)
@@ -162,7 +167,7 @@ void CRender::RenderDebugInfo(CObject* obj)
     char hp[BUF_SIZE]; sprintf(hp, "Health %i", obj->Health());
     char pos[BUF_SIZE]; sprintf(pos, "Pos Y %i X %i", obj->Position().x, obj->Position().y);
     char frame[BUF_SIZE]; sprintf(frame, "Frame %u", CurrentFrame());
-    SetText(hp, Fvector().set(obj->Position().x, obj->Position().y - 15));
+    //SetText(hp, Fvector().set(obj->Position().x, obj->Position().y - 15));
     //SetText(pos, Fvector().set(obj->Position().x, obj->Position().y - 30));
     //SetText(frame, Fvector().set(obj->Position().x, obj->Position().y - 45));
     RenderRect(obj);

@@ -6,6 +6,7 @@
 #include "objects/actor.h"
 #include "Objects/object.h"
 #include "Objects/bullet.h"
+#include "Objects/enemy.h"
 #include <sdl2/SDL.h>
 #include <cstdio>
 #include <memory>
@@ -15,7 +16,7 @@ CObject* CLevel::CreateObject(int type)
     switch (type)
     {
     case eActor: { SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Created CActor"); return new CActor(); } break;
-    case eEnemy: return new CObject(); break;
+    case eEnemy: return new CEnemy(); break;
     default: return new CObject(); break;
     }
 }
@@ -30,6 +31,7 @@ CLevel::~CLevel()
     g_Render->DestroyTexture(m_BGTexture);
     m_current_control_entity = NULL;
     delete m_cfg_parser;
+    m_objects_pool.clear();
 }
 
 void CLevel::Init()
@@ -47,7 +49,8 @@ void CLevel::Init()
 
 void CLevel::InitializeObjects()
 {
-    for (uint8_t id = 0; id < MaxObjects(); ++id)
+    uint8_t id = 0;
+    for (; id < MaxObjects(); ++id)
     {
         if (id < g_RawLevels[0].raw_objects.size())
         {
@@ -56,7 +59,10 @@ void CLevel::InitializeObjects()
             CObject* object = m_objects_pool[id];
             object->m_ID = id;
             object->OnSpawn(raw_obj);
-            ++m_uObjects_count;
+            m_uObjects_count++;
+#if DEBUG
+            SDL_LogMessage(0, SDL_LogPriority::SDL_LOG_PRIORITY_INFO, "[%u] Spawn object with CLASS [%u]; ID [%u]; HP [%u]", CurrentFrame(), raw_obj->eClass, object->m_ID, object->Health());
+#endif
         }
     }
 }
@@ -86,58 +92,62 @@ CObject* CLevel::CurrentControlEntity()
     return m_current_control_entity;
 }
 
-void CLevel::CreateBullet(CObject* owner)
+CBullet* CLevel::CreateBullet(CObject* pOwner)
 {
-    if (!owner || !owner->is_Alive())
+    if (!pOwner || !pOwner->is_Alive())
     {
         SDL_LogMessage(0, SDL_LogPriority::SDL_LOG_PRIORITY_WARN, "[%u] Can't create Bullet - owner is dead", CurrentFrame());
-        return;        
+        return NULL;        
     }
 
     if (m_uObjects_count >= MaxObjects())
     {
         SDL_LogMessage(0, SDL_LogPriority::SDL_LOG_PRIORITY_WARN, "[%u] Can't create Bullet - no free memory", CurrentFrame());
-        return;
+        return NULL;
     }
 
-    CBullet* bullet = new CBullet(owner);
-    m_objects_pool.push_back(bullet);
-    bullet->m_ID = m_uObjects_count++;
+    CBullet* pBullet = new CBullet(pOwner);
+    pBullet->m_ID = m_uObjects_count++;
 
     RawObject raw_bullet;
     raw_bullet.iHealth = 1;
     raw_bullet.eClass = eShoot;
-    raw_bullet.sName = "bullet";
+    char bullet_name[BUF_SIZE]; sprintf(bullet_name, "bullet%i", pBullet->m_ID);
+    raw_bullet.sName = bullet_name;
     raw_bullet.sSprite = BULLET_SPRITE_ALIAS;
 
-    uint8_t owner_direction = owner->Direction();
+    uint8_t owner_direction = pOwner->Direction();
     Fvector start_pos;
 
     if (owner_direction & CObject::eDirRight)
-        start_pos.set(owner->Position().x + owner->Rect().w, owner->Position().y + owner->Rect().h / 2);
+        start_pos.set(pOwner->Position().x + pOwner->Rect().w, pOwner->Position().y + pOwner->Rect().h / 2);
     else if (owner_direction & CObject::eDirLeft)
-        start_pos.set(owner->Position().x, owner->Position().y + owner->Rect().h / 2);
+        start_pos.set(pOwner->Position().x, pOwner->Position().y + pOwner->Rect().h / 2);
     else if (owner_direction & CObject::eDirUp)
-        start_pos.set(owner->Position().x + owner->Rect().w / 2, owner->Position().y);
+        start_pos.set(pOwner->Position().x + pOwner->Rect().w / 2, pOwner->Position().y);
     else if (owner_direction & CObject::eDirDown)
-        start_pos.set(owner->Position().x + owner->Rect().w / 2, owner->Position().y + owner->Rect().h);   
+        start_pos.set(pOwner->Position().x + pOwner->Rect().w / 2, pOwner->Position().y + pOwner->Rect().h);   
 
     raw_bullet.startPosition = start_pos;
-
-    bullet->OnSpawn(&raw_bullet);
+    pBullet->OnSpawn(&raw_bullet);
+    m_objects_pool.push_back(pBullet);
+    return pBullet;
 }
 
 void CLevel::FreeObjectPool()
 {
     for (auto I = m_objects_pool.begin(); 
-              I < m_objects_pool.end(); ++I)
+              I < m_objects_pool.end();)
     {
-        CObject* object = *I;
+        CObject* pObject = *I;
 
-        if (object && object->NeedToDestroy())
+        if (pObject && pObject->NeedToDestroy())
         {
-            m_objects_pool.erase(I);
-            delete object;
+            m_objects_pool[pObject->ID()] = NULL;
+            delete pObject;
+           
+           // I = m_objects_pool.erase(I);
         }
+        else I++;
     }
 }

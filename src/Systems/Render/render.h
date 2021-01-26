@@ -22,7 +22,7 @@ class CRender
     SDL_Window* Window() {return m_Window;};
     SDL_Renderer* Renderer() {return m_Renderer;};
 
-    SDL_Texture* LoadTexture(const char* filename);
+    SDL_Texture* LoadTexture(std::string filename);
     void DestroyTexture(SDL_Texture* texture);
 
     void Render();
@@ -36,6 +36,8 @@ class CRender
     void RenderBackground();
     void QueryTexture(SDL_Texture* texture, SDL_Rect& rect, Fvector& pos, uint8_t direction);
     double GetSpriteAngleByDirection(uint8_t direction);
+
+    std::map<std::string, SDL_Texture*> m_texture_pool;
 
     TTF_Font* m_font = NULL;
     SDL_Window* m_Window = NULL;
