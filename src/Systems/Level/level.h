@@ -29,6 +29,7 @@ class CLevel
 
     CObject* CreateObject(int type);
     void FreeObjectPool();
+    void AddObjectToPool(CObject* object);
     CSettingsParser* m_cfg_parser = NULL;
 
     std::vector<CObject*> m_objects_pool;

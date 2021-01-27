@@ -23,7 +23,7 @@ CObject* CLevel::CreateObject(int type)
 
 CLevel::CLevel()
 {
-    m_uObjects_count = 0;
+    m_objects_pool.clear();
 }
 
 CLevel::~CLevel()
@@ -31,7 +31,6 @@ CLevel::~CLevel()
     g_Render->DestroyTexture(m_BGTexture);
     m_current_control_entity = NULL;
     delete m_cfg_parser;
-    m_objects_pool.clear();
 }
 
 void CLevel::Init()
@@ -39,7 +38,7 @@ void CLevel::Init()
     if (!m_cfg_parser)
         m_cfg_parser = new CSettingsParser();
 
-    m_objects_pool.reserve(MaxObjects());
+    m_objects_pool.resize(MaxObjects(), NULL);
 
     m_cfg_parser->Init();
     m_cfg_parser->ParseLevelsCfg();
@@ -50,20 +49,15 @@ void CLevel::Init()
 void CLevel::InitializeObjects()
 {
     uint8_t id = 0;
-    for (; id < MaxObjects(); ++id)
+    for (; id < g_RawLevels[0].raw_objects.size(); ++id)
     {
-        if (id < g_RawLevels[0].raw_objects.size())
-        {
-            auto raw_obj = &g_RawLevels[0].raw_objects[id];
-            m_objects_pool.push_back(CreateObject(raw_obj->eClass));
-            CObject* object = m_objects_pool[id];
-            object->m_ID = id;
-            object->OnSpawn(raw_obj);
-            m_uObjects_count++;
+        auto raw_obj = &g_RawLevels[0].raw_objects[id];
+        CObject* object = CreateObject(raw_obj->eClass);
+        object->OnSpawn(raw_obj);
+        AddObjectToPool(object);
 #if DEBUG
-            SDL_LogMessage(0, SDL_LogPriority::SDL_LOG_PRIORITY_INFO, "[%u] Spawn object with CLASS [%u]; ID [%u]; HP [%u]", CurrentFrame(), raw_obj->eClass, object->m_ID, object->Health());
+        SDL_LogMessage(0, SDL_LogPriority::SDL_LOG_PRIORITY_INFO, "[%u] Spawn object with CLASS [%u]; ID [%u]; HP [%u]", CurrentFrame(), raw_obj->eClass, object->m_ID, object->Health());
 #endif
-        }
     }
 }
 
@@ -100,15 +94,13 @@ CBullet* CLevel::CreateBullet(CObject* pOwner)
         return NULL;        
     }
 
-    if (m_uObjects_count >= MaxObjects())
+    if (m_objects_pool.size() >= MaxObjects())
     {
         SDL_LogMessage(0, SDL_LogPriority::SDL_LOG_PRIORITY_WARN, "[%u] Can't create Bullet - no free memory", CurrentFrame());
         return NULL;
     }
 
-    CBullet* pBullet = new CBullet(pOwner);
-    pBullet->m_ID = m_uObjects_count++;
-
+    CBullet *pBullet = new CBullet(pOwner);
     RawObject raw_bullet;
     raw_bullet.iHealth = 1;
     raw_bullet.eClass = eShoot;
@@ -130,7 +122,8 @@ CBullet* CLevel::CreateBullet(CObject* pOwner)
 
     raw_bullet.startPosition = start_pos;
     pBullet->OnSpawn(&raw_bullet);
-    m_objects_pool.push_back(pBullet);
+    AddObjectToPool(pBullet);
+
     return pBullet;
 }
 
@@ -145,9 +138,21 @@ void CLevel::FreeObjectPool()
         {
             m_objects_pool[pObject->ID()] = NULL;
             delete pObject;
-           
-           // I = m_objects_pool.erase(I);
         }
-        else I++;
+        else ++I;
     }
+}
+
+void CLevel::AddObjectToPool(CObject *pObj)
+{
+    for (int i = 0; i < m_objects_pool.size(); ++i)
+    {
+        if (!m_objects_pool[i])
+        {
+            pObj->m_ID = i;
+            m_objects_pool[i] = pObj;
+            break;
+        }
+    }
+}
 }

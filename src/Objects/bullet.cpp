@@ -1,7 +1,7 @@
 #include "bullet.h"
 #include "Systems/Utils/vector.h"
 
-void CBullet::OnSpawn(RawObject* raw_obj)
+void CBullet::OnSpawn(RawObject *raw_obj)
 {
     inherited::OnSpawn(raw_obj);
 
@@ -11,6 +11,9 @@ void CBullet::OnSpawn(RawObject* raw_obj)
 void CBullet::Update()
 {
     inherited::Update();
+
+    if (Owner() && Owner()->NeedToDestroy())
+        m_object = NULL;
 
     if (OutOfBoundaries())
     {
@@ -28,18 +31,22 @@ void CBullet::Update()
         Position().y += m_iVelocity;
 }
 
-void CBullet::OnCollide(CObject* who_collide, CObjectCollider::CollisionSide collision_side)
+void CBullet::OnCollide(CObject *who_collide, CObjectCollider::CollisionSide collision_side)
 {
-    if (who_collide->ID() == m_object->ID())
-        return;
-
     if (m_bHitTarget)
         return;
 
-    inherited::OnCollide(who_collide, collision_side);
-    who_collide->OnHit(m_object, 25);
-    m_bHitTarget = true;
+    if (who_collide && m_object)
+    {
+        if (who_collide->ID() == m_object->ID())
+        {
+            return;
+        }
+    }
 
+    inherited::OnCollide(who_collide, collision_side);
+    who_collide->OnHit(m_object, m_iDamage);
+    m_bHitTarget = true;
     Die();
 }
 
@@ -49,13 +56,13 @@ bool CBullet::OutOfBoundaries()
         return true;
 
     if (Position().x > SCREEN_WIDTH)
-        return true;  
+        return true;
 
     if (Position().y < 0)
-        return true; 
+        return true;
 
-    if (Position().x > SCREEN_HEIGHT)
-        return true; 
+    if (Position().y > SCREEN_HEIGHT)
+        return true;
 
     return false;
 }
