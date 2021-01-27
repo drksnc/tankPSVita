@@ -21,7 +21,8 @@ CActor::CActor()
 
 CActor::~CActor()
 {
-
+    if (g_actor == this)
+        g_actor = NULL;
 }
 
 void CActor::OnSpawn(RawObject* raw_object)
