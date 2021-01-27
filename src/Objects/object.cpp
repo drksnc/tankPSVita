@@ -83,6 +83,11 @@ Fvector& CObject::Position()
     return m_position;
 }
 
+Fvector& CObject::PositionCenter()
+{
+    return Fvector().set(Position().x + Rect().w / 2, Position().y + Rect().h / 2);
+}
+
 uint8_t CObject::Direction()
 {
     return m_direction_mask;

@@ -34,6 +34,7 @@ class CBullet : public CObject
 
     bool m_bHitTarget = false;
     uint8_t m_owner_direction;
-    CObject* m_object;
+    CObject* m_object = NULL;
     uint8_t m_iVelocity = 1;
+    uint8_t m_iDamage = 25;
 };

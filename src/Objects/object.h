@@ -46,6 +46,7 @@ class CObject
     virtual bool NeedToDestroy() {return m_bNeedToDestroy;};
 
     virtual Fvector& Position();
+    virtual Fvector& PositionCenter();
     virtual uint8_t Direction();
 
 

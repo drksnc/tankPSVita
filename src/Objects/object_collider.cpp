@@ -13,11 +13,11 @@ bool CObjectCollider::IsIntersects(CObject* objectA, CObject* objectB, Collision
     SDL_Rect& rectB = objectB->Rect();
 
     //Get center
-    int CenterAX = objectA->Position().x + objectA->Rect().w / 2;
-    int CenterAY = objectA->Position().y + objectA->Rect().h / 2;
+    int CenterAX = objectA->PositionCenter().x;
+    int CenterAY = objectA->PositionCenter().y;
 
-    int CenterBX = objectB->Position().x + objectB->Rect().w / 2;
-    int CenterBY = objectB->Position().y + objectB->Rect().h / 2;
+    int CenterBX = objectB->PositionCenter().x;
+    int CenterBY = objectB->PositionCenter().y;
 
     float w = 0.5 * (rectA.w + rectB.w);
     float h = 0.5 * (rectA.h + rectB.h);

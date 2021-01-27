@@ -3,7 +3,6 @@
 #include "Systems/Level/level.h"
 #include "Systems/Render/render.h"
 #include "globals.h"
-#include "time.h"
 
 CControls* g_Control;
 CLevel* g_Level;
