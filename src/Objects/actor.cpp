@@ -8,8 +8,6 @@
 #include "systems/Render/render.h"
 #include "Objects/bullet.h"
 
-typedef CObjectCollider::CollisionSide collision_side;
-
 CActor* g_actor = NULL;
 CActor* Actor() {return g_actor;};
 
@@ -150,3 +148,4 @@ void CActor::Update()
 {
     inherited::Update();
 }
+

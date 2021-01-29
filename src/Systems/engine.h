@@ -4,13 +4,17 @@
 #include <vector>
 #include <string>
 #include "Systems/Utils/vector.h"
+#include "Objects/object_collider.h"
 
 class CControls;
 class CLevel;
 class SDL_Window;
 class SDL_Renderer;
 class CRender;
+class CObjectCollider;
 
+
+typedef CObjectCollider::CollisionSide collision_side;
 static const int g_iSpeed = 1;
 
 enum eObjectType
@@ -22,6 +26,7 @@ enum eObjectType
     ePowerup,
     eSpawn,
     eBase,
+    eWall,
     eUnknownObj
 };
 
@@ -32,6 +37,7 @@ struct RawObject
     std::string sSprite;
     int iHealth;
     int iCollideOff;
+    bool bNeedUpdateNodes = false;
     Fvector startPosition;
 };
 

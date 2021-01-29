@@ -23,7 +23,9 @@ CObject* CLevel::CreateObject(int type)
 
 CLevel::CLevel()
 {
+    m_object_pool_size = 0;
     m_objects_pool.clear();
+    m_ai_nodes.clear();
 }
 
 CLevel::~CLevel()
@@ -39,11 +41,13 @@ void CLevel::Init()
         m_cfg_parser = new CSettingsParser();
 
     m_objects_pool.resize(MaxObjects(), NULL);
-
     m_cfg_parser->Init();
     m_cfg_parser->ParseLevelsCfg();
+    GenerateAINodes();
     InitializeObjects();
     InitializeBG();
+
+    CreateWalls();
 }
 
 void CLevel::InitializeObjects()
@@ -71,7 +75,7 @@ void CLevel::Update()
 {
     FreeObjectPool();
 
-    for (auto it : m_objects_pool)
+    for (auto &it : m_objects_pool)
         if (it) it->Update();
 }
 
@@ -94,7 +98,7 @@ CBullet* CLevel::CreateBullet(CObject* pOwner)
         return NULL;        
     }
 
-    if (m_objects_pool.size() >= MaxObjects())
+    if (m_object_pool_size >= MaxObjects())
     {
         SDL_LogMessage(0, SDL_LogPriority::SDL_LOG_PRIORITY_WARN, "[%u] Can't create Bullet - no free memory", CurrentFrame());
         return NULL;
@@ -130,7 +134,7 @@ CBullet* CLevel::CreateBullet(CObject* pOwner)
 void CLevel::FreeObjectPool()
 {
     for (auto I = m_objects_pool.begin(); 
-              I < m_objects_pool.end();)
+              I < m_objects_pool.end(); ++I)
     {
         CObject* pObject = *I;
 
@@ -138,8 +142,8 @@ void CLevel::FreeObjectPool()
         {
             m_objects_pool[pObject->ID()] = NULL;
             delete pObject;
+            m_object_pool_size--;
         }
-        else ++I;
     }
 }
 
@@ -151,8 +155,50 @@ void CLevel::AddObjectToPool(CObject *pObj)
         {
             pObj->m_ID = i;
             m_objects_pool[i] = pObj;
+            m_object_pool_size++;
             break;
         }
     }
 }
+
+void CLevel::GenerateAINodes()
+{
+    int nodeX = 0;
+    int nodeY = 0;
+    int nodeWidth = AI_NODE_WIDTH;
+    int nodeHeight = AI_NODE_HEIGHT;
+    int nodeCount = 0;
+
+    int nodesXcount = static_cast<int>(SCREEN_WIDTH / AI_NODE_WIDTH);
+    int nodesYcount = static_cast<int>(SCREEN_HEIGHT / AI_NODE_HEIGHT);
+
+    for (int j = 0; j < nodesYcount; ++j)
+    {  
+        nodeX = 0;
+        nodeWidth = 0; 
+
+        for (int i = 0; i < nodesXcount; i++)
+        {
+            AINode* node = new AINode();
+            node->ID = nodeCount;
+            node->position.set(nodeX, nodeY);
+
+            node->neighbors_id.clear();
+
+            if (node->ID % nodesXcount + 1 != 0 && node->ID != 189) node->neighbors_id.push_back(node->ID + 1);
+            if (node->ID % nodesXcount != 0) node->neighbors_id.push_back(node->ID - 1);
+            if (node->ID + 1 - nodesXcount > 0) node->neighbors_id.push_back(node->ID - nodesXcount);
+            if (node->ID < (nodesXcount * nodesYcount / AI_NODE_HEIGHT * AI_NODE_WIDTH) - 1 && node->ID != 189) node->neighbors_id.push_back(node->ID + nodesXcount);
+
+            m_ai_nodes.push_back(node);
+            nodeWidth += AI_NODE_WIDTH;
+            nodeX = nodeWidth; 
+            nodeCount++;          
+        }
+
+        nodeY = nodeHeight;
+        nodeHeight += AI_NODE_HEIGHT;   
+    }    
+}
+
 }

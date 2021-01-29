@@ -61,8 +61,10 @@ int CSettingsParser::ParseLevelsCfg()
                 sClass.c_str(), sSprite.c_str(), posX, posY, hp, i);
 
             RawObject* raw_obj = &g_RawLevels[i].raw_objects[j];
-            raw_obj->sName = buf; //object0, object1, etc
+            snprintf(buf, BUF_SIZE, "%s%d", sClass.c_str(), j);
+            raw_obj->sName = buf; //enemy0, actor1, etc
             raw_obj->eClass = (eObjectType)AssignClassForObject(sClass);
+            raw_obj->bNeedUpdateNodes = (raw_obj->eClass == eActor || raw_obj->eClass == eEnemy);
             raw_obj->sSprite = sSprite;
             raw_obj->iHealth = hp;
             raw_obj->iCollideOff = collide_off;

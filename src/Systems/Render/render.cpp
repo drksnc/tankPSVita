@@ -68,14 +68,14 @@ void CRender::Render()
 
     for (uint8_t it = 0; it < g_Level->MaxObjects(); ++it)
     {
-        CObject* object = g_Level->getObject(it);
+        CObject *pObject = g_Level->getObject(it);
 
-        if (!object) continue;
-        if (object->NeedToRender())
-            QueryTexture(object->Texture(), object->Rect(), object->Position(), object->Direction());
+        if (!pObject) continue;
+        if (pObject->NeedToRender())
+            QueryTexture(pObject->Texture(), pObject->Rect(), pObject->Position(), pObject->Direction());
 
 #if DEBUG
-        RenderDebugInfo(object);
+        RenderDebugInfo(pObject);
 #endif
     }
 

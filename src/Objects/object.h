@@ -56,6 +56,8 @@ class CObject
     uint8_t m_iColliderOff = 0;
     bool m_bIsColliding = false;    
     void SetDirection(eDirection dir);
+    bool NodeFree(int NodeID);
+    int GetNodeByPosition(Fvector& pos);
 
     uint8_t m_ID;
     std::string m_sName;
@@ -66,5 +68,12 @@ class CObject
     uint32_t m_uTimeBeforeDestroy;
     uint32_t m_uDeathTime;
     bool m_bNeedToDestroy = false;
+    bool m_bNeedUpdateAINodes = false;
+    std::vector<int> m_nodes;
+
+    private:
+    void UpdateAINodes();
+    void SetNodeOccupied(int nodeID, bool occupied);
+    void DisableNodes();
 
 };

@@ -7,6 +7,15 @@ class CSettingsParser;
 class SDL_Texture;
 class CBullet;
 
+struct AINode
+{
+    int ID;
+    Fvector position;
+    bool occupied = false;
+    int cost = 0;
+    std::vector<int> neighbors_id;
+};
+
 class CLevel
 {
     public:
@@ -20,12 +29,15 @@ class CLevel
     CObject* CurrentControlEntity();
     void Update();
 
+    std::vector<AINode*> AINodes() {return m_ai_nodes;};
+
     SDL_Texture* BackgroundTexture() {return m_BGTexture;};
     CBullet* CreateBullet(CObject* owner);
 
     private:
     void InitializeObjects();
     void InitializeBG();
+    void GenerateAINodes();
 
     CObject* CreateObject(int type);
     void FreeObjectPool();
@@ -33,8 +45,8 @@ class CLevel
     CSettingsParser* m_cfg_parser = NULL;
 
     std::vector<CObject*> m_objects_pool;
+    std::vector<AINode*> m_ai_nodes;
     CObject* m_current_control_entity = NULL;
     SDL_Texture* m_BGTexture;
-
-    uint8_t m_uObjects_count;
+    uint8_t m_object_pool_size;
 };
