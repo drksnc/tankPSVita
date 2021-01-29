@@ -1,4 +1,5 @@
 #include "bullet.h"
+#include "enemy.h"
 #include "Systems/Utils/vector.h"
 
 void CBullet::OnSpawn(RawObject *raw_obj)
@@ -39,9 +40,10 @@ void CBullet::OnCollide(CObject *who_collide, CObjectCollider::CollisionSide col
     if (who_collide && m_object)
     {
         if (who_collide->ID() == m_object->ID())
-        {
             return;
-        }
+
+        if (dynamic_cast<CEnemy*>(who_collide) && dynamic_cast<CEnemy*>(m_object))
+            return;
     }
 
     inherited::OnCollide(who_collide, collision_side);
