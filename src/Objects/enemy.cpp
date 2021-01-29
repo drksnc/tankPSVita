@@ -272,19 +272,19 @@ void CEnemy::BuildPathToNode(int NodeID)
 
     CheckGoalNode(goal);
 
-    std::vector<int> frontier;
-    frontier.push_back(start);
+    typedef std::pair<int, int> PQElement;
+    std::priority_queue<PQElement, std::vector<PQElement>, std::greater<PQElement>> frontier;
+    frontier.emplace(0, start);
     
     int size = g_Level->AINodes().size();
-    std::vector<bool> bInspected;
-    bInspected.resize(1024, 0);
-
-    bInspected[start] = true;
+    std::unordered_map<int, int> cost_so_far;
+    cost_so_far.clear();
+    cost_so_far[start] = 0;
 
     while (!frontier.empty())
     {
-        auto current = frontier.back();
-        frontier.pop_back();
+        auto current = frontier.top().second;
+        frontier.pop();
         m_pos_queue.push_back(current);
 
         if (current == goal)
@@ -292,11 +292,17 @@ void CEnemy::BuildPathToNode(int NodeID)
 
         for (auto &it : g_Level->AINodes()[current]->neighbors_id)
         {
-            if (!g_Level->AINodes()[it]->occupied && !bInspected[it])
+            if (g_Level->AINodes()[it]->occupied)
+                continue;
+
+            auto iterCost = cost_so_far.find(it);
+            int new_cost = cost_so_far[it] + abs(current - it) == 1 ? 10 : 15;
+            
+            if (iterCost == cost_so_far.end() || !(*iterCost).second || new_cost < cost_so_far[it])
             {
-                frontier.push_back(g_Level->AINodes()[it]->ID);
-                bInspected[it] = true;
-                if (it == goal) break;
+                cost_so_far[it] = new_cost;
+                int priority = new_cost + Fvector().heuristic(g_Level->AINodes()[it]->position, g_Level->AINodes()[goal]->position);
+                frontier.emplace(priority, it);
             }
         }
     }
@@ -306,17 +312,17 @@ void CEnemy::CheckGoalNode(int& NodeID)
 {
     if (g_Level->AINodes()[NodeID]->occupied)
     {
-        bool bFoundNewGoal = false;
+        bool bNodeFound = false;
         for ( auto &it : g_Level->AINodes()[NodeID]->neighbors_id)
         {
             if (!g_Level->AINodes()[it]->occupied)
             {
-                bFoundNewGoal = true;
+                bNodeFound = true;
                 NodeID = it;
             }
         }
 
-        if (!bFoundNewGoal)
+        if (!bNodeFound)
         {
             NodeID = *g_Level->AINodes()[NodeID]->neighbors_id.begin();
             CheckGoalNode(NodeID);
