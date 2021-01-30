@@ -10,12 +10,18 @@
 #include <sdl2/SDL.h>
 #include <cstdio>
 #include <memory>
+#include <algorithm>
 
 CObject* CLevel::CreateObject(int type)
 {
     switch (type)
     {
-    case eActor: { SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Created CActor"); return new CActor(); } break;
+    case eActor: {
+            CActor* pActor = new CActor(); 
+            SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Created CActor"); 
+            m_actors.push_back(pActor);
+            return pActor; 
+        } break;
     case eEnemy: return new CEnemy(); break;
     default: return new CObject(); break;
     }

@@ -36,8 +36,8 @@ struct RawObject
     eObjectType eClass;
     std::string sSprite;
     int iHealth;
-    int iCollideOff;
     bool bNeedUpdateNodes = false;
+    bool bBreakable = true;
     Fvector startPosition;
 };
 
@@ -57,3 +57,5 @@ extern CRender* g_Render;
 extern std::vector<RawLevel> g_RawLevels;
 extern uint32_t g_CurrentFrame;
 extern bool    g_bExit;
+
+extern void LoadLevel(int lvl_id);

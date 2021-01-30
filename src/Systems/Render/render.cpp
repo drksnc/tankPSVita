@@ -97,7 +97,7 @@ SDL_Texture* CRender::LoadTexture(std::string filename)
     else
     {
 #if DEBUG
-	    SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Loading %s", filename.c_str());
+	    SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Loading texture %s", filename.c_str());
 #endif
 	    pTexture = IMG_LoadTexture(m_Renderer, filename.c_str());
         m_texture_pool.insert(std::make_pair(filename, pTexture));
@@ -148,11 +148,17 @@ void CRender::SetText(std::string text, Fvector pos)
 
 void CRender::RenderBackground()
 {
+    if (!g_Level)
+        return;
+
+    if (!g_Level->BackgroundTexture())
+        return;
+
     SDL_QueryTexture(g_Level->BackgroundTexture(), NULL, NULL, NULL, NULL);
     SDL_RenderCopy(m_Renderer, g_Level->BackgroundTexture(), NULL, NULL);
 }
 
-void CRender::RenderRect(CObject* obj)
+void CRender::RenderRect(CObject *obj)
 {
     SDL_SetRenderDrawColor(g_Render->Renderer(), 0, 0, 255, SDL_ALPHA_OPAQUE);
 
@@ -162,7 +168,7 @@ void CRender::RenderRect(CObject* obj)
     SDL_RenderDrawLine(g_Render->Renderer(), obj->Rect().x + obj->Rect().w, obj->Rect().y + obj->Rect().h, obj->Rect().x + obj->Rect().w, (obj->Rect().y + obj->Rect().h) - obj->Rect().h);
 }
 
-void CRender::RenderDebugInfo(CObject* obj)
+void CRender::RenderDebugInfo(CObject *obj)
 {
     char hp[BUF_SIZE]; sprintf(hp, "Health %i", obj->Health());
     char pos[BUF_SIZE]; sprintf(pos, "Pos Y %i X %i", obj->Position().x, obj->Position().y);

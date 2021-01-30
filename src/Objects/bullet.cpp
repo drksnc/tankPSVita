@@ -37,17 +37,24 @@ void CBullet::OnCollide(CObject *who_collide, CObjectCollider::CollisionSide col
     if (m_bHitTarget)
         return;
 
+    bool bNoDmg = false;
+
     if (who_collide && m_object)
     {
         if (who_collide->ID() == m_object->ID())
             return;
 
-        if (dynamic_cast<CEnemy*>(who_collide) && dynamic_cast<CEnemy*>(m_object))
-            return;
+        if (who_collide->Type() == eObjectType::eEnemy && 
+            m_object->Type() == eObjectType::eEnemy)
+            bNoDmg = true;
     }
 
-    inherited::OnCollide(who_collide, collision_side);
-    who_collide->OnHit(m_object, m_iDamage);
+    if (!bNoDmg)
+    {
+        inherited::OnCollide(who_collide, collision_side);
+        who_collide->OnHit(m_object, m_iDamage);
+    }
+
     m_bHitTarget = true;
     Die();
 }

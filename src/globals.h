@@ -17,6 +17,9 @@ enum {
 #define GAME_FONT_SIZE 14
 #define BUF_SIZE 64
 
+#define AI_NODE_WIDTH 50
+#define AI_NODE_HEIGHT 50
+
 #if DEBUG
 #define printf psvDebugScreenPrintf
 #endif

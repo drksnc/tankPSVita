@@ -14,6 +14,7 @@ struct AINode
     bool occupied = false;
     int cost = 0;
     std::vector<int> neighbors_id;
+    CObject* object_inside = NULL;
 };
 
 class CLevel

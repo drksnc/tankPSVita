@@ -9,4 +9,5 @@ class Fvector
     Fvector& sub(Fvector& vec);
     int distance_to(Fvector& vec);
     bool equals(Fvector& vec);
+    int heuristic(Fvector& vec0, Fvector& vec1);
 };

@@ -15,10 +15,15 @@ Fvector& Fvector::sub(Fvector& vec)
 
 int Fvector::distance_to(Fvector& vec)
 {
-    return abs(x-vec.x + y-vec.y);
+    return abs(x-vec.x) + abs(y-vec.y);
 }
 
 bool Fvector::equals(Fvector& vec)
 {
     return x == vec.x && y == vec.y;
+}
+
+int Fvector::heuristic(Fvector& vec0, Fvector& vec1) 
+{
+    return abs(vec0.x - vec1.x) + abs(vec0.y - vec1.y);
 }
