@@ -26,17 +26,27 @@ CLevel::CLevel()
     m_object_pool_size = 0;
     m_objects_pool.clear();
     m_ai_nodes.clear();
+    m_actors.clear();
 }
 
 CLevel::~CLevel()
 {
-    g_Render->DestroyTexture(m_BGTexture);
+    FreeObjectPool(false);
+
+    for (auto &node : AINodes()) 
+        delete node;
+
+    AINodes().clear();
+
     m_current_control_entity = NULL;
     delete m_cfg_parser;
+    m_cfg_parser = NULL;
 }
 
-void CLevel::Init()
+void CLevel::Init(int lvl_id)
 {
+    m_current_level_id = lvl_id;
+
     if (!m_cfg_parser)
         m_cfg_parser = new CSettingsParser();
 

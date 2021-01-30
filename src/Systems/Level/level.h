@@ -22,7 +22,7 @@ class CLevel
     CLevel();
     ~CLevel();
 
-    void Init();
+    void Init(int lvl_id);
     CObject* getObject(uint8_t obj_id) {return m_objects_pool[obj_id];};
     uint8_t MaxObjects() {return std::numeric_limits<uint8_t>::max();};
     void SetCurrentControlEntity(CObject* obj);
@@ -34,13 +34,17 @@ class CLevel
     SDL_Texture* BackgroundTexture() {return m_BGTexture;};
     CBullet* CreateBullet(CObject* owner);
 
+    int m_nodesXcount = 0;
+    int m_nodesYcount = 0;
+
     private:
     void InitializeObjects();
     void InitializeBG();
     void GenerateAINodes();
+    void CreateWalls();
 
     CObject* CreateObject(int type);
-    void FreeObjectPool();
+    void FreeObjectPool(bool bNeedCheckForDestroy = true);
     void AddObjectToPool(CObject* object);
     CSettingsParser* m_cfg_parser = NULL;
 
@@ -49,4 +53,5 @@ class CLevel
     CObject* m_current_control_entity = NULL;
     SDL_Texture* m_BGTexture;
     uint8_t m_object_pool_size;
+    int m_current_level_id = 0;
 };

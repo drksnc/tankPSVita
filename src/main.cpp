@@ -14,6 +14,13 @@ uint32_t CurrentFrame() {return g_CurrentFrame;};
 
 std::vector<RawLevel> g_RawLevels;
 
+void LoadLevel(int lvl_id)
+{
+    if (g_Level) delete g_Level;
+    g_Level = new CLevel();
+    g_Level->Init(lvl_id);
+}
+
 int main(int argc, char *argv[]) 
 {
     g_RawLevels.clear();
@@ -27,7 +34,7 @@ int main(int argc, char *argv[])
     if (g_Render->Init() == -1) 
         return -1;
 
-    g_Level->Init();
+    g_Level->Init(0);
 
     while (!g_bExit)
     {
