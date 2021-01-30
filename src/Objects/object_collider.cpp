@@ -7,6 +7,9 @@
 #include "Systems/engine.h"
 #include "SDL2/sdl.h"
 
+#define X_OFFSET 1
+#define Y_OFFSET 1
+
 bool CObjectCollider::IsIntersects(CObject* objectA, CObject* objectB, CollisionSide& side)
 {
     SDL_Rect& rectA = objectA->Rect();
@@ -25,12 +28,15 @@ bool CObjectCollider::IsIntersects(CObject* objectA, CObject* objectB, Collision
     float dx = CenterAX - CenterBX;
     float dy = CenterAY - CenterBY;
 
-    int offsetX = 0; int offsetY = 0;
+    int offsetX = X_OFFSET; int offsetY = Y_OFFSET;
 
-    if (abs(dx) <= w - offsetX && abs(dy) <= h - offsetY)
+    if (abs(dx) < w && abs(dy) < h)
     {
         float wy = w * dy;
         float hx = h * dx;
+
+        if (abs(dx - w) < offsetX || abs(dy - h) < offsetY)
+            return false; 
 
         if (wy > hx)
             side = wy > -hx ? eCSTop : eCSRight;
