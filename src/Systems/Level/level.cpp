@@ -183,28 +183,35 @@ void CLevel::GenerateAINodes()
     int nodeY = 0;
     int nodeWidth = AI_NODE_WIDTH;
     int nodeHeight = AI_NODE_HEIGHT;
+
+    //Have to do this because of rounding
+    float screenWidth = SCREEN_WIDTH;
+    float screenHeight = SCREEN_HEIGHT;
+
     int nodeCount = 0;
 
-    int nodesXcount = static_cast<int>(SCREEN_WIDTH / AI_NODE_WIDTH);
-    int nodesYcount = static_cast<int>(SCREEN_HEIGHT / AI_NODE_HEIGHT);
+    m_nodesXcount = screenWidth / nodeWidth + 0.5f;
+    m_nodesYcount = screenHeight / nodeHeight + 0.5f;
 
-    for (int j = 0; j < nodesYcount; ++j)
+    int maxNodes = m_nodesXcount * m_nodesYcount;
+
+    for (int j = 0; j < m_nodesYcount; ++j)
     {  
         nodeX = 0;
         nodeWidth = 0; 
 
-        for (int i = 0; i < nodesXcount; i++)
+        for (int i = 0; i < m_nodesXcount; ++i)
         {
             AINode* node = new AINode();
             node->ID = nodeCount;
             node->position.set(nodeX, nodeY);
-
+            
             node->neighbors_id.clear();
 
-            if (node->ID % nodesXcount + 1 != 0 && node->ID != 189) node->neighbors_id.push_back(node->ID + 1);
-            if (node->ID % nodesXcount != 0) node->neighbors_id.push_back(node->ID - 1);
-            if (node->ID + 1 - nodesXcount > 0) node->neighbors_id.push_back(node->ID - nodesXcount);
-            if (node->ID < (nodesXcount * nodesYcount / AI_NODE_HEIGHT * AI_NODE_WIDTH) - 1 && node->ID != 189) node->neighbors_id.push_back(node->ID + nodesXcount);
+            if (node->ID % m_nodesXcount + 1 != 0 && node->ID != maxNodes-1) node->neighbors_id.push_back(node->ID + 1);
+            if (node->ID % m_nodesXcount != 0) node->neighbors_id.push_back(node->ID - 1);
+            if (node->ID+1 - m_nodesXcount > 0) node->neighbors_id.push_back(node->ID - m_nodesXcount);
+            if (node->ID + m_nodesXcount < maxNodes-1) node->neighbors_id.push_back(node->ID + m_nodesXcount);
 
             m_ai_nodes.push_back(node);
             nodeWidth += AI_NODE_WIDTH;

@@ -164,7 +164,7 @@ void CEnemy::MoveTo(int NodeID)
     int CurrentNodeID = *m_nodes.begin();
     int NextNodeID = NodeID;
 
-    int nodesXcount = static_cast<int>(SCREEN_WIDTH / AI_NODE_WIDTH);
+    int nodesXcount = g_Level->m_nodesXcount;
 
     auto CurrentNode = g_Level->AINodes()[*m_nodes.begin()];
     auto NextNode = g_Level->AINodes()[NextNodeID];
@@ -333,7 +333,7 @@ void CEnemy::CheckGoalNode(int& NodeID)
 AINode* CEnemy::GetFreeNode(collision_side collision_side)
 {
     int CurrentNodeID = *m_nodes.begin();
-    int nodesXcount = SCREEN_WIDTH / AI_NODE_WIDTH;
+    int nodesXcount = g_Level->m_nodesXcount;
     auto Nodes = g_Level->AINodes();
     std::vector<int> free_nodes;
     free_nodes.clear();

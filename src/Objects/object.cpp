@@ -9,10 +9,15 @@ CObject::CObject()
 {
     m_sName = "undefined";
     m_texture = NULL;
-    m_iHealth = 1;
+    m_iHealth = 0;
     m_direction_mask = 0;
     m_uTimeBeforeDestroy = 0;
     m_nodes.clear();
+
+    m_Rect.h = 0;
+    m_Rect.w = 0;
+    m_Rect.x = 0;
+    m_Rect.y = 0;
 }
 
 CObject::~CObject()
@@ -25,8 +30,9 @@ void CObject::OnSpawn(RawObject* raw_object)
 {
     m_sName = raw_object->sName;
     m_iHealth = raw_object->iHealth;
-    m_iColliderOff = raw_object->iCollideOff;
     m_bNeedUpdateAINodes = raw_object->bNeedUpdateNodes;
+    m_bBreakable = raw_object->bBreakable;
+    m_ObjectType = raw_object->eClass;
     m_position.set(raw_object->startPosition.x, raw_object->startPosition.y);
     char texture_buf[BUF_SIZE]; sprintf(texture_buf, "%s%s%s", SPRITES_DIR, raw_object->sSprite.c_str(), PNG_EXT);
     SetTexture(g_Render->LoadTexture(texture_buf));
@@ -43,7 +49,7 @@ void CObject::OnCollide(CObject* who_collide, CObjectCollider::CollisionSide col
     if (!who_collide)
         return;
 
-    if (dynamic_cast<CBullet*>(who_collide)) // we handle this in OnHit method
+    if (who_collide->Type() == eObjectType::eShoot) // we handle this in OnHit method
         return;
 
     m_bIsColliding = true;
@@ -132,32 +138,25 @@ void CObject::Update()
         return;
     }
 
-    UpdateAINodes();
+    if (m_bNeedUpdateAINodes) UpdateAINodes();
     m_object_collider->Update();
 }
 
 void CObject::UpdateAINodes()
 {
-    if (!m_bNeedUpdateAINodes)
-        return;
-
     DisableNodes();
 
-    int nodesX = SCREEN_WIDTH / AI_NODE_WIDTH;
-    int nodeID = GetNodeByPosition(Position());
+    int nodesX = g_Level->m_nodesXcount;
 
-    SetNodeOccupied(nodeID, true);
+    int LeftBottom = GetNodeByPosition(Fvector().set(Position().x, Position().y + Rect().h));
+    int LeftTop = GetNodeByPosition(Position());
+    int RightBottom = GetNodeByPosition(Fvector().set(Position().x + Rect().w, Position().y + Rect().h));
+    int RightTop = GetNodeByPosition(Fvector().set(Position().x + Rect().w, Position().y));
 
-    if (Rect().w > AI_NODE_WIDTH)
-    {
-        SetNodeOccupied(nodeID + 1, true);
-    }
-
-    if (Rect().h > AI_NODE_HEIGHT)
-    {   
-        SetNodeOccupied(nodeID + nodesX, true); 
-        SetNodeOccupied(nodeID + nodesX + 1, true);   
-    }
+    SetNodeOccupied(LeftBottom, true);
+    SetNodeOccupied(LeftTop, true);
+    SetNodeOccupied(RightBottom, true);
+    SetNodeOccupied(RightTop, true);
 }
 
 int CObject::GetNodeByPosition(Fvector& pos)
@@ -165,7 +164,7 @@ int CObject::GetNodeByPosition(Fvector& pos)
     int posX = pos.x;
     int posY = pos.y;
 
-    int nodesX = SCREEN_WIDTH / AI_NODE_WIDTH;
+    int nodesX = g_Level->m_nodesXcount;
     int nodeID = (posX / AI_NODE_WIDTH) + nodesX * (posY / AI_NODE_HEIGHT);
 
     return nodeID;
@@ -176,7 +175,10 @@ void CObject::SetNodeOccupied(int nodeID, bool bOccupied)
     if (nodeID > g_Level->AINodes().size())
         return;
 
-    g_Level->AINodes()[nodeID]->occupied = bOccupied;
+    auto node = g_Level->AINodes()[nodeID];
+
+    node->occupied = bOccupied;
+    node->object_inside = bOccupied ? this : NULL;
     if (bOccupied) m_nodes.push_back(nodeID);
 }
 
@@ -184,7 +186,7 @@ void CObject::DisableNodes()
 {
     for (auto &it : m_nodes)
         SetNodeOccupied(it, false);
-
+    
     m_nodes.clear();
 }
 
