@@ -6,6 +6,7 @@
 class CSettingsParser;
 class SDL_Texture;
 class CBullet;
+class CActor;
 
 struct AINode
 {
@@ -54,5 +55,8 @@ class CLevel
     CObject* m_current_control_entity = NULL;
     SDL_Texture* m_BGTexture;
     uint8_t m_object_pool_size;
+
     int m_current_level_id = 0;
+
+    std::vector<CActor*> m_actors;
 };

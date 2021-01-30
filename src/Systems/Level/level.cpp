@@ -230,4 +230,17 @@ void CLevel::GenerateAINodes()
     }    
 }
 
+void CLevel::CreateWalls()
+{
+    RawObject raw_wall;
+    raw_wall.eClass = eWall;
+    raw_wall.iHealth = 90;
+    raw_wall.sName = "wall_name";
+    raw_wall.sSprite = "wall";
+    raw_wall.startPosition = (AINodes()[90]->position);
+    raw_wall.bBreakable = false;
+
+    auto pObj = CreateObject(eWall);
+    pObj->OnSpawn(&raw_wall);
+    AddObjectToPool(pObj);        
 }
