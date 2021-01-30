@@ -30,12 +30,12 @@ class CObject
     virtual uint8_t Health() {return m_iHealth;};
     virtual bool is_Alive();
     virtual void Die();
+    virtual bool Breakable() {return m_bBreakable;};
 
     virtual void OnCollide(CObject* who_collide, CObjectCollider::CollisionSide collision_side);
     virtual void OnHit(CObject* who_hit, int damage);
     virtual void AfterCollide();
     virtual bool IsColliding() {return m_bIsColliding;};
-    virtual uint8_t ColliderOffset() {return m_iColliderOff;};
 
     virtual void Update();
     virtual SDL_Texture* Texture();
@@ -48,16 +48,16 @@ class CObject
     virtual Fvector& Position();
     virtual Fvector& PositionCenter();
     virtual uint8_t Direction();
-
+            int Type() {return m_ObjectType;};
+            bool Static() {return m_bNeedUpdateAINodes;};
 
     protected:
     CObjectCollider* m_object_collider;
     uint8_t m_iHealth;
-    uint8_t m_iColliderOff = 0;
     bool m_bIsColliding = false;    
     void SetDirection(eDirection dir);
-    bool NodeFree(int NodeID);
-    int GetNodeByPosition(Fvector& pos);
+    static bool NodeFree(int NodeID);
+    static int GetNodeByPosition(Fvector& pos);
 
     uint8_t m_ID;
     std::string m_sName;
@@ -67,9 +67,12 @@ class CObject
     uint8_t m_direction_mask;
     uint32_t m_uTimeBeforeDestroy;
     uint32_t m_uDeathTime;
+    bool m_bBreakable = true;
     bool m_bNeedToDestroy = false;
     bool m_bNeedUpdateAINodes = false;
     std::vector<int> m_nodes;
+
+    int m_ObjectType;
 
     private:
     void UpdateAINodes();

@@ -5,15 +5,19 @@
 #include "objects/object_collider.h"
 #include "actor.h"
 #include <queue>
+#include <unordered_map>
 #include "globals.h"
 
-#define RUN_HP_THRESHHOLD 20
+#define SEE_ENEMY_THRESHHOLD 250
 
 CEnemy::CEnemy()
 {
     m_shoot_cooldown = 100;
+    m_move_cooldown = 50;
     m_iVelocity = 0;
     m_last_time_shot = m_shoot_cooldown;
+    m_current_aistate = aiDummy;
+    m_last_time_move = m_move_cooldown;
 }
 
 void CEnemy::OnSpawn(RawObject* obj)
@@ -22,23 +26,27 @@ void CEnemy::OnSpawn(RawObject* obj)
     m_target_position.set(Position().x, Position().y);
 
     m_iVelocity = 3;
-    SetDirection(eDirDown);
+    m_current_aistate = aiSearching;
+    SetDirection(eDirUp);
 }
 
 void CEnemy::OnCollide(CObject* who_collide, collision_side collision_side)
 {
-    if (m_bMoving)
-    {
-        MoveTo(m_pos_queue.front());
-    }
+    if (!CollisionEnabled())
+        return;
 
     inherited::OnCollide(who_collide, collision_side);
+    m_objectCollidingWith = who_collide;
     m_CollisionSide |= collision_side;
 }
 
 void CEnemy::AfterCollide()
 {
+    if (!CollisionEnabled())
+        return;
+
     inherited::AfterCollide();
+    m_objectCollidingWith = NULL;
     m_CollisionSide = CObjectCollider::eCSNone;
 }
 
@@ -58,23 +66,38 @@ void CEnemy::Shoot()
 void CEnemy::Update()
 {
     inherited::Update();
+
+    if (!m_pos_queue.empty() && !m_bMoving)
+        MoveTo(m_pos_queue.front());
+
     Think();
     UpdateMove();
 }
 
 void CEnemy::UpdateMove()
 {
-    if (Position().equals(m_target_position))
+    if (Stuck()) //застряли
+        TryResetCollide();
+
+    if (Position().equals(m_target_position)) //приехали в точку
     {
         m_bMoving = false;
-        if (m_pos_queue.size())
-            m_pos_queue.erase(m_pos_queue.begin());
+        if (CollisionEnabled()) //всё ок, запланированное место
+        {
+            if (m_pos_queue.size())
+                m_pos_queue.erase(m_pos_queue.begin());
+        }
+        else //вырвались из чужой коллизии, просто вернём свою
+        {
+            SetCollisionEnabled(true);
+        }
+
         return;
     }
 
     m_bHorizontalMove ? UpdateMoveX() : UpdateMoveY();
-
     m_bMoving = true;
+    m_previous_position = Position();
 }
 
 void CEnemy::UpdateMoveX()
@@ -143,6 +166,8 @@ void CEnemy::UpdateMoveY()
 
 void CEnemy::MoveTo(Fvector& pos)
 {
+    m_last_time_move = CurrentFrame();
+
     int dtX = abs(Position().x - m_target_position.x);
     int dtY = abs(Position().y - m_target_position.y);
 
@@ -151,7 +176,42 @@ void CEnemy::MoveTo(Fvector& pos)
     else if (dtX < dtY)
         m_bHorizontalMove = false;
     else
+    {   
+        int CurrentNodeID = GetNodeByPosition(Position());
+        int nodesXcount = g_Level->m_nodesXcount;
+
         m_bHorizontalMove = static_cast<bool>(std::rand());
+
+        if (Position().y - m_target_position.y > 0) //стоим выше
+        {
+            if (NodeFree(CurrentNodeID + nodesXcount))
+                m_bHorizontalMove = false;
+            else
+                m_bHorizontalMove = true;
+        }
+        else if (Position().y - m_target_position.y < 0) //стоим ниже
+        {
+            if (NodeFree(CurrentNodeID - nodesXcount))
+                m_bHorizontalMove = false;
+            else
+                m_bHorizontalMove = true;
+        }
+
+        if (Position().x - m_target_position.x > 0) //стоим левее
+        {
+            if (NodeFree(CurrentNodeID + 1))
+                m_bHorizontalMove = true;
+            else
+                m_bHorizontalMove = false;
+        }
+        else if (Position().x - m_target_position.x < 0)
+        {
+            if (NodeFree(CurrentNodeID - 1))
+                m_bHorizontalMove = true;
+            else
+                m_bHorizontalMove = false;
+        }
+    }
 
     m_target_position.set(pos.x, pos.y);
 }
@@ -169,88 +229,9 @@ void CEnemy::MoveTo(int NodeID)
     auto CurrentNode = g_Level->AINodes()[*m_nodes.begin()];
     auto NextNode = g_Level->AINodes()[NextNodeID];
 
-    bool bNeedToRebuildPath = false;
-
-    if (m_bIsColliding)
-    {
-        m_bIsColliding = false;
-
-        if (m_CollisionSide & collision_side::eCSRight)
-        {
-            auto pNode = GetFreeNode(collision_side::eCSRight);
-            if (pNode) MoveTo(pNode->ID);
-        }
-        else if (m_CollisionSide & collision_side::eCSLeft)
-        {
-            auto pNode = GetFreeNode(collision_side::eCSLeft);
-            if (pNode) MoveTo(pNode->ID);
-        }
-        else if (m_CollisionSide & collision_side::eCSTop)
-        {
-            auto pNode = GetFreeNode(collision_side::eCSTop);
-            if (pNode) MoveTo(pNode->ID);
-        }
-        else if (m_CollisionSide & collision_side::eCSBottom)
-        {
-            auto pNode = GetFreeNode(collision_side::eCSBottom);
-            if (pNode) MoveTo(pNode->ID);
-        }
-
-        return;
-    }
-
     if (NextNode->occupied)
     {
-        SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "NextNode->occupied %u", ID());
-        BuildPathToNode(*m_pos_queue.end());
-        return;
-    }
-
-    int dt = abs(NextNodeID - CurrentNodeID);
-    if (dt > 1 && dt != nodesXcount) //между текущей и следующей нодой есть другие, проверим на занятость
-    {
-        SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "dt > 1 && dt != nodesXcount %u", ID());
-        if (Direction() & eDirRight)
-        {
-            int RightNeighbor = CurrentNodeID + 1;
-            if (RightNeighbor <= g_Level->AINodes().size() - 1)
-            {
-                if (g_Level->AINodes()[RightNeighbor]->occupied)
-                    bNeedToRebuildPath = true;
-            }       
-        }
-        else if (Direction() & eDirLeft)
-        {
-            int LeftNeighbor = CurrentNodeID - 1;
-            if (LeftNeighbor <= g_Level->AINodes().size() - 1)
-            {
-                if (g_Level->AINodes()[LeftNeighbor]->occupied)
-                    bNeedToRebuildPath = true;
-            }
-        }
-        else if (Direction() & eDirUp)
-        {
-            int TopNeighbor = CurrentNodeID - nodesXcount;
-            if (TopNeighbor <= g_Level->AINodes().size() - 1)
-            {
-                if (g_Level->AINodes()[TopNeighbor]->occupied)
-                    bNeedToRebuildPath = true;
-            }
-        }
-        else if (Direction() & eDirDown)
-        {
-            int BottomNeighbor = CurrentNodeID + nodesXcount;
-            if (BottomNeighbor <= g_Level->AINodes().size() - 1)
-            {
-                if (g_Level->AINodes()[BottomNeighbor]->occupied)
-                    bNeedToRebuildPath = true;
-            }
-        }
-    }
-
-    if (bNeedToRebuildPath)
-    {
-        BuildPathToNode(*m_pos_queue.end());
+        BuildPathToNode(m_GoalNode);
         return;
     }
 
@@ -271,12 +252,11 @@ void CEnemy::BuildPathToNode(int NodeID)
     int goal = NodeID;
 
     CheckGoalNode(goal);
+    m_GoalNode = goal;
 
     typedef std::pair<int, int> PQElement;
     std::priority_queue<PQElement, std::vector<PQElement>, std::greater<PQElement>> frontier;
     frontier.emplace(0, start);
-    
-    int size = g_Level->AINodes().size();
     std::unordered_map<int, int> cost_so_far;
     cost_so_far.clear();
     cost_so_far[start] = 0;
@@ -369,29 +349,67 @@ AINode* CEnemy::GetFreeNode(collision_side collision_side)
     }
 
     if (free_nodes.size())
-        return Nodes[free_nodes[rand() % 3]];    
+        return Nodes[free_nodes[rand() % free_nodes.size()]];    
     else
         return NULL;
 }
 
+bool CEnemy::TryResetCollide()
+{
+    AINode* pTargetNode = NULL;
+    if (m_CollisionSide & (collision_side::eCSRight))
+        pTargetNode = GetFreeNode(collision_side::eCSRight);
+    else if (m_CollisionSide & (collision_side::eCSLeft))
+        pTargetNode = GetFreeNode(collision_side::eCSLeft);
+    else if (m_CollisionSide & (collision_side::eCSTop))
+        pTargetNode = GetFreeNode(collision_side::eCSTop);
+    else if (m_CollisionSide & (collision_side::eCSBottom))
+        pTargetNode = GetFreeNode(collision_side::eCSBottom);
+
+    if (!pTargetNode)
+        return false;
+
+    SetCollisionEnabled(false);
+    MoveTo(pTargetNode->ID);
+    return true;
+}
+
+void CEnemy::SetCollisionEnabled(bool v)
+{
+    m_bIsColliding = v;
+    m_bCollisionEnabled = v;
+    m_CollisionSide = collision_side::eCSNone;
+}
+
+bool CEnemy::Stuck()
+{
+    if (!m_bMoving)
+        return false; 
+
+    if (!Colliding())
+        return false;
+    
+    if (m_objectCollidingWith && m_objectCollidingWith->Static())
+        return false;
+
+    if (!m_previous_position.equals(Position()))
+        return false;
+    
+    return true;
+}
+
 void CEnemy::Think()
 {
-    if (!m_pos_queue.empty() && !m_bMoving)
-    {
-        MoveTo(m_pos_queue.front());
-    }
-
     SetEnemy();
-
-    if (CanSeeEnemy())
-        Health() > RUN_HP_THRESHHOLD ? Attack() : Run();
-    else
-        Health() > RUN_HP_THRESHHOLD ? Search() : Run();
+    CanSeeEnemy() ? Attack() : Search();
 }
 
 void CEnemy::SetEnemy()
 {
+    if (!Actor())
+        m_enemy = NULL;
 
+    m_enemy = Actor();
 }
 
 bool CEnemy::CanSeeEnemy()
@@ -399,22 +417,144 @@ bool CEnemy::CanSeeEnemy()
     if (!m_enemy)
         return false;
 
-    //handle eyes for enemies here
+    if (Position().distance_to(m_enemy->Position()) > SEE_ENEMY_THRESHHOLD)
+        return false;
 
     return true;
 }
 
 void CEnemy::Search()
 {
+    if (m_current_aistate == aiSearching)
+    {
+        if (!m_pos_queue.size() || GetNodeByPosition(Position()) == *m_pos_queue.end())
+        {
+            if (m_last_enemies_node != -1)
+            {
+                BuildPathToNode(m_last_enemies_node);
+                m_last_enemies_node = -1;
+            }
 
-}
+            int NextNode = std::rand() % g_Level->AINodes().size() - 1;
+            while (g_Level->AINodes()[NextNode]->occupied)
+                NextNode = std::rand() % g_Level->AINodes().size() - 1;      
 
-void CEnemy::Run()
-{
-    
+            BuildPathToNode(NextNode);
+        }
+    }
+    else
+    {
+        BuildPathToNode(m_last_enemies_node);
+    }
+
+    m_current_aistate = aiSearching;
 }
 
 void CEnemy::Attack()
 {
+    //попытаемся встать на одну линию с врагом
+    m_last_enemies_node = GetNodeByPosition(m_enemy->Position());
+
+    int dX = abs(m_enemy->Position().x - Position().x);
+    int dY = abs(m_enemy->Position().y - Position().y);
+
+    //сильно дёргается, пришлось сделать кулдаун на передвижение 
+    if (CurrentFrame() - m_last_time_move > m_move_cooldown)
+    {
+        if (dX > dY)
+        {
+            if (dX > m_enemy->Rect().w)
+                MoveTo(Fvector().set(m_enemy->Position().x, Position().y));
+        }
+        else
+        {
+            if (dY > m_enemy->Rect().h)
+                MoveTo(Fvector().set(Position().x, m_enemy->Position().y));
+        }
+
+        m_last_time_move = CurrentFrame();
+    }
+
     
+    if (!m_bMoving)
+    {
+        int enemynode = GetNodeByPosition(m_enemy->Position());
+        int currentnode = GetNodeByPosition(PositionCenter());
+        int nextYNodeOffset = g_Level->m_nodesXcount;
+        int nextXNodeOffset = 1;
+
+        if (dX < dY) 
+        {
+            if (Direction() & eDirRight || Direction() & eDirLeft)
+                return;
+
+            if (m_enemy->Position().y > Position().y)
+            {
+                //проверим все клетки до врага, если их невозможно разрушить, то объедем
+                for (int i = 0; i < (abs(currentnode - enemynode)) / g_Level->m_nodesXcount; ++i) 
+                {
+                    auto nodeToCheck = g_Level->AINodes()[currentnode + nextYNodeOffset];
+                    if (nodeToCheck->occupied && nodeToCheck->object_inside && !nodeToCheck->object_inside->Breakable())
+                    {
+                        BuildPathToNode(GetNodeByPosition(m_enemy->Position()));
+                        return;
+                    }
+                    nextYNodeOffset += g_Level->m_nodesXcount;
+                }
+                SetDirection(eDirDown);
+            }
+            else
+            {
+                for (int i = 0; i < (abs(currentnode - enemynode)) / g_Level->m_nodesXcount; ++i)
+                {
+                    auto nodeToCheck = g_Level->AINodes()[currentnode - nextYNodeOffset];
+                    if (nodeToCheck->occupied && nodeToCheck->object_inside && !nodeToCheck->object_inside->Breakable())
+                    {
+                        BuildPathToNode(GetNodeByPosition(m_enemy->Position()));
+                        return;
+                    }
+                    nextYNodeOffset += g_Level->m_nodesXcount;
+                }
+                SetDirection(eDirUp);
+            }
+        }
+        else
+        {
+            if (Direction() & eDirUp || Direction() & eDirDown)
+                return;
+
+            if (m_enemy->Position().x > Position().x)
+            {
+                for (int i = 0; i < abs(currentnode - enemynode); ++i)
+                {
+                    auto nodeToCheck = g_Level->AINodes()[currentnode + nextXNodeOffset];
+                    if (nodeToCheck->occupied && nodeToCheck->object_inside && !nodeToCheck->object_inside->Breakable())
+                    {
+                        BuildPathToNode(GetNodeByPosition(m_enemy->Position()));
+                        return;
+                    }
+                    nextXNodeOffset += 1;
+                }
+                SetDirection(eDirRight);
+            }
+            else
+            {
+                for (int i = 0; i < abs(currentnode - enemynode); ++i)
+                {
+                    auto nodeToCheck = g_Level->AINodes()[currentnode - nextXNodeOffset];
+                    if (nodeToCheck->occupied && nodeToCheck->object_inside && !nodeToCheck->object_inside->Breakable())
+                    {
+                        BuildPathToNode(GetNodeByPosition(m_enemy->Position()));
+                        return;
+                    }
+                    nextXNodeOffset += 1;
+                }
+                SetDirection(eDirLeft);
+            }
+        }
+
+        Shoot();
+    }
+    
+    m_current_aistate = aiAttacking;
 }
