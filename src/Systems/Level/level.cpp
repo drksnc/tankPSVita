@@ -63,9 +63,9 @@ void CLevel::Init(int lvl_id)
 void CLevel::InitializeObjects()
 {
     uint8_t id = 0;
-    for (; id < g_RawLevels[0].raw_objects.size(); ++id)
+    for (; id < g_RawLevels[m_current_level_id].raw_objects.size(); ++id)
     {
-        auto raw_obj = &g_RawLevels[0].raw_objects[id];
+        auto raw_obj = &g_RawLevels[m_current_level_id].raw_objects[id];
         CObject* object = CreateObject(raw_obj->eClass);
         object->OnSpawn(raw_obj);
         AddObjectToPool(object);
@@ -77,7 +77,7 @@ void CLevel::InitializeObjects()
 
 void CLevel::InitializeBG()
 {
-    char bg_texture_buf[BUF_SIZE]; sprintf(bg_texture_buf, "%s%s%s", BG_DIR, g_RawLevels[0].background_texture.c_str(), PNG_EXT);
+    char bg_texture_buf[BUF_SIZE]; sprintf(bg_texture_buf, "%s%s%s", BG_DIR, g_RawLevels[m_current_level_id].background_texture.c_str(), PNG_EXT);
     m_BGTexture = g_Render->LoadTexture(bg_texture_buf); 
 }
 
@@ -141,15 +141,21 @@ CBullet* CLevel::CreateBullet(CObject* pOwner)
     return pBullet;
 }
 
-void CLevel::FreeObjectPool()
+void CLevel::FreeObjectPool(bool bNeedCheckForDestroy)
 {
     for (auto I = m_objects_pool.begin(); 
               I < m_objects_pool.end(); ++I)
     {
         CObject* pObject = *I;
 
-        if (pObject && pObject->NeedToDestroy())
+        if (pObject)
         {
+            if (bNeedCheckForDestroy && !pObject->NeedToDestroy())
+                continue;
+            
+            if (pObject->Type() == eObjectType::eActor)
+                m_actors.erase(std::find(m_actors.begin(), m_actors.end(), dynamic_cast<CActor*>(pObject)));
+
             m_objects_pool[pObject->ID()] = NULL;
             delete pObject;
             m_object_pool_size--;
