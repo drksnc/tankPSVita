@@ -195,6 +195,60 @@ src/Objects/actor.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Objects/actor.cpp.s
 .PHONY : src/Objects/actor.cpp.s
 
+src/Objects/bullet.obj: src/Objects/bullet.cpp.obj
+
+.PHONY : src/Objects/bullet.obj
+
+# target to build an object file
+src/Objects/bullet.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Objects/bullet.cpp.obj
+.PHONY : src/Objects/bullet.cpp.obj
+
+src/Objects/bullet.i: src/Objects/bullet.cpp.i
+
+.PHONY : src/Objects/bullet.i
+
+# target to preprocess a source file
+src/Objects/bullet.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Objects/bullet.cpp.i
+.PHONY : src/Objects/bullet.cpp.i
+
+src/Objects/bullet.s: src/Objects/bullet.cpp.s
+
+.PHONY : src/Objects/bullet.s
+
+# target to generate assembly for a file
+src/Objects/bullet.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Objects/bullet.cpp.s
+.PHONY : src/Objects/bullet.cpp.s
+
+src/Objects/enemy.obj: src/Objects/enemy.cpp.obj
+
+.PHONY : src/Objects/enemy.obj
+
+# target to build an object file
+src/Objects/enemy.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Objects/enemy.cpp.obj
+.PHONY : src/Objects/enemy.cpp.obj
+
+src/Objects/enemy.i: src/Objects/enemy.cpp.i
+
+.PHONY : src/Objects/enemy.i
+
+# target to preprocess a source file
+src/Objects/enemy.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Objects/enemy.cpp.i
+.PHONY : src/Objects/enemy.cpp.i
+
+src/Objects/enemy.s: src/Objects/enemy.cpp.s
+
+.PHONY : src/Objects/enemy.s
+
+# target to generate assembly for a file
+src/Objects/enemy.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Objects/enemy.cpp.s
+.PHONY : src/Objects/enemy.cpp.s
+
 src/Objects/object.obj: src/Objects/object.cpp.obj
 
 .PHONY : src/Objects/object.obj
@@ -222,6 +276,60 @@ src/Objects/object.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Objects/object.cpp.s
 .PHONY : src/Objects/object.cpp.s
 
+src/Objects/object_collider.obj: src/Objects/object_collider.cpp.obj
+
+.PHONY : src/Objects/object_collider.obj
+
+# target to build an object file
+src/Objects/object_collider.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Objects/object_collider.cpp.obj
+.PHONY : src/Objects/object_collider.cpp.obj
+
+src/Objects/object_collider.i: src/Objects/object_collider.cpp.i
+
+.PHONY : src/Objects/object_collider.i
+
+# target to preprocess a source file
+src/Objects/object_collider.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Objects/object_collider.cpp.i
+.PHONY : src/Objects/object_collider.cpp.i
+
+src/Objects/object_collider.s: src/Objects/object_collider.cpp.s
+
+.PHONY : src/Objects/object_collider.s
+
+# target to generate assembly for a file
+src/Objects/object_collider.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Objects/object_collider.cpp.s
+.PHONY : src/Objects/object_collider.cpp.s
+
+src/Objects/spawner.obj: src/Objects/spawner.cpp.obj
+
+.PHONY : src/Objects/spawner.obj
+
+# target to build an object file
+src/Objects/spawner.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Objects/spawner.cpp.obj
+.PHONY : src/Objects/spawner.cpp.obj
+
+src/Objects/spawner.i: src/Objects/spawner.cpp.i
+
+.PHONY : src/Objects/spawner.i
+
+# target to preprocess a source file
+src/Objects/spawner.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Objects/spawner.cpp.i
+.PHONY : src/Objects/spawner.cpp.i
+
+src/Objects/spawner.s: src/Objects/spawner.cpp.s
+
+.PHONY : src/Objects/spawner.s
+
+# target to generate assembly for a file
+src/Objects/spawner.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Objects/spawner.cpp.s
+.PHONY : src/Objects/spawner.cpp.s
+
 src/Systems/Level/level.obj: src/Systems/Level/level.cpp.obj
 
 .PHONY : src/Systems/Level/level.obj
@@ -248,6 +356,60 @@ src/Systems/Level/level.s: src/Systems/Level/level.cpp.s
 src/Systems/Level/level.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Systems/Level/level.cpp.s
 .PHONY : src/Systems/Level/level.cpp.s
+
+src/Systems/MainMenu/main_menu.obj: src/Systems/MainMenu/main_menu.cpp.obj
+
+.PHONY : src/Systems/MainMenu/main_menu.obj
+
+# target to build an object file
+src/Systems/MainMenu/main_menu.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Systems/MainMenu/main_menu.cpp.obj
+.PHONY : src/Systems/MainMenu/main_menu.cpp.obj
+
+src/Systems/MainMenu/main_menu.i: src/Systems/MainMenu/main_menu.cpp.i
+
+.PHONY : src/Systems/MainMenu/main_menu.i
+
+# target to preprocess a source file
+src/Systems/MainMenu/main_menu.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Systems/MainMenu/main_menu.cpp.i
+.PHONY : src/Systems/MainMenu/main_menu.cpp.i
+
+src/Systems/MainMenu/main_menu.s: src/Systems/MainMenu/main_menu.cpp.s
+
+.PHONY : src/Systems/MainMenu/main_menu.s
+
+# target to generate assembly for a file
+src/Systems/MainMenu/main_menu.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Systems/MainMenu/main_menu.cpp.s
+.PHONY : src/Systems/MainMenu/main_menu.cpp.s
+
+src/Systems/Network/network.obj: src/Systems/Network/network.cpp.obj
+
+.PHONY : src/Systems/Network/network.obj
+
+# target to build an object file
+src/Systems/Network/network.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Systems/Network/network.cpp.obj
+.PHONY : src/Systems/Network/network.cpp.obj
+
+src/Systems/Network/network.i: src/Systems/Network/network.cpp.i
+
+.PHONY : src/Systems/Network/network.i
+
+# target to preprocess a source file
+src/Systems/Network/network.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Systems/Network/network.cpp.i
+.PHONY : src/Systems/Network/network.cpp.i
+
+src/Systems/Network/network.s: src/Systems/Network/network.cpp.s
+
+.PHONY : src/Systems/Network/network.s
+
+# target to generate assembly for a file
+src/Systems/Network/network.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/hello_cpp_world.dir/build.make CMakeFiles/hello_cpp_world.dir/src/Systems/Network/network.cpp.s
+.PHONY : src/Systems/Network/network.cpp.s
 
 src/Systems/Render/render.obj: src/Systems/Render/render.cpp.obj
 
@@ -398,12 +560,30 @@ help:
 	@echo "... src/Objects/actor.obj"
 	@echo "... src/Objects/actor.i"
 	@echo "... src/Objects/actor.s"
+	@echo "... src/Objects/bullet.obj"
+	@echo "... src/Objects/bullet.i"
+	@echo "... src/Objects/bullet.s"
+	@echo "... src/Objects/enemy.obj"
+	@echo "... src/Objects/enemy.i"
+	@echo "... src/Objects/enemy.s"
 	@echo "... src/Objects/object.obj"
 	@echo "... src/Objects/object.i"
 	@echo "... src/Objects/object.s"
+	@echo "... src/Objects/object_collider.obj"
+	@echo "... src/Objects/object_collider.i"
+	@echo "... src/Objects/object_collider.s"
+	@echo "... src/Objects/spawner.obj"
+	@echo "... src/Objects/spawner.i"
+	@echo "... src/Objects/spawner.s"
 	@echo "... src/Systems/Level/level.obj"
 	@echo "... src/Systems/Level/level.i"
 	@echo "... src/Systems/Level/level.s"
+	@echo "... src/Systems/MainMenu/main_menu.obj"
+	@echo "... src/Systems/MainMenu/main_menu.i"
+	@echo "... src/Systems/MainMenu/main_menu.s"
+	@echo "... src/Systems/Network/network.obj"
+	@echo "... src/Systems/Network/network.i"
+	@echo "... src/Systems/Network/network.s"
 	@echo "... src/Systems/Render/render.obj"
 	@echo "... src/Systems/Render/render.i"
 	@echo "... src/Systems/Render/render.s"

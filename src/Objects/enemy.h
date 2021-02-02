@@ -16,6 +16,7 @@ class CEnemy : public CObject
     virtual void Update();
     virtual void OnSpawn(RawObject* obj);
     virtual void OnCollide(CObject* who_collide, collision_side collision_side);
+    virtual void OnHit(CObject* who_hit, int dmg);
     virtual void AfterCollide();
 
     void Shoot();

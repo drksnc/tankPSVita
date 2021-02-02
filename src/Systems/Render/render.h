@@ -25,12 +25,12 @@ class CRender
     SDL_Texture* LoadTexture(std::string filename);
     void DestroyTexture(SDL_Texture* texture);
 
-    void Render();
+    static void Render();
 
     void RenderRect(CObject* obj);
     void RenderDebugInfo(CObject* obj);
 
-    void SetText(std::string text, Fvector pos);
+    void SetText(std::string text, Fvector pos, SDL_Color* color = NULL);
 
     private:
     void RenderBackground();

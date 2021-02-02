@@ -172,7 +172,10 @@ int CObject::GetNodeByPosition(Fvector& pos)
 
 void CObject::SetNodeOccupied(int nodeID, bool bOccupied)
 {
-    if (nodeID > g_Level->AINodes().size())
+    if (nodeID > g_Level->MaxAINodes())
+        return;
+
+    if (nodeID < 0)
         return;
 
     auto node = g_Level->AINodes()[nodeID];
@@ -192,11 +195,14 @@ void CObject::DisableNodes()
 
 bool CObject::NodeFree(int NodeID)
 {
-    if (NodeID > g_Level->AINodes().size() - 1)
+    if (NodeID > g_Level->MaxAINodes())
+        return false;
+
+    if (NodeID < 0)
         return false;
 
     if (g_Level->AINodes()[NodeID]->occupied)
         return false;
-    
+
     return true;
 }

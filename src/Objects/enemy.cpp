@@ -7,6 +7,7 @@
 #include <queue>
 #include <unordered_map>
 #include "globals.h"
+#include "psp2/kernel/threadmgr.h"
 
 #define SEE_ENEMY_THRESHHOLD 250
 
@@ -28,6 +29,16 @@ void CEnemy::OnSpawn(RawObject* obj)
     m_iVelocity = 3;
     m_current_aistate = aiSearching;
     SetDirection(eDirUp);
+}
+
+void CEnemy::OnHit(CObject* who_hit, int dmg)
+{
+    inherited::OnHit(who_hit, dmg);
+    
+    if (!who_hit)
+        return;
+
+    BuildPathToNode(GetNodeByPosition(who_hit->PositionCenter()));
 }
 
 void CEnemy::OnCollide(CObject* who_collide, collision_side collision_side)
@@ -230,15 +241,21 @@ void CEnemy::MoveTo(Fvector& pos)
 
 void CEnemy::MoveTo(int NodeID)
 {
-    if (!m_nodes.size())
+    if (m_nodes.empty())
         return;
 
-    int CurrentNodeID = *m_nodes.begin();
+    if (NodeID > g_Level->MaxAINodes())
+        return;
+
+    if (NodeID < 0)
+        return;
+
+    int CurrentNodeID = m_nodes.front();
     int NextNodeID = NodeID;
 
     int nodesXcount = g_Level->m_nodesXcount;
 
-    auto CurrentNode = g_Level->AINodes()[*m_nodes.begin()];
+    auto CurrentNode = g_Level->AINodes()[CurrentNodeID];
     auto NextNode = g_Level->AINodes()[NextNodeID];
 
     if (NextNode->occupied)
@@ -252,7 +269,10 @@ void CEnemy::MoveTo(int NodeID)
 
 void CEnemy::BuildPathToNode(int NodeID)
 {
-    if (NodeID > g_Level->AINodes().size())
+    if (NodeID > g_Level->MaxAINodes())
+        return;
+
+    if (NodeID < 0)
         return;
 
     if (!m_nodes.size())
@@ -304,17 +324,17 @@ void CEnemy::CheckGoalNode(int& NodeID)
 {
     if (g_Level->AINodes()[NodeID]->occupied)
     {
-        bool bNodeFound = false;
+        bool bNewNodeFound = false;
         for ( auto &it : g_Level->AINodes()[NodeID]->neighbors_id)
         {
             if (!g_Level->AINodes()[it]->occupied)
             {
-                bNodeFound = true;
+                bNewNodeFound = true;
                 NodeID = it;
             }
         }
 
-        if (!bNodeFound)
+        if (!bNewNodeFound)
         {
             NodeID = *g_Level->AINodes()[NodeID]->neighbors_id.begin();
             CheckGoalNode(NodeID);
@@ -400,9 +420,6 @@ bool CEnemy::Stuck()
 
     if (!Colliding())
         return false;
-    
-    if (m_objectCollidingWith && m_objectCollidingWith->Static())
-        return false;
 
     if (!m_previous_position.equals(Position()))
         return false;
@@ -438,8 +455,8 @@ bool CEnemy::CanSeeEnemy()
 void CEnemy::Search()
 {
     if (m_current_aistate == aiSearching)
-    {
-        if (!m_pos_queue.size() || GetNodeByPosition(Position()) == *m_pos_queue.end())
+    {   
+        if (!m_pos_queue.size() || GetNodeByPosition(Position()) == m_pos_queue.back())
         {
             if (m_last_enemies_node != -1)
             {
@@ -447,9 +464,9 @@ void CEnemy::Search()
                 m_last_enemies_node = -1;
             }
 
-            int NextNode = std::rand() % g_Level->AINodes().size() - 1;
+            int NextNode = std::rand() % g_Level->AINodes().size();
             while (g_Level->AINodes()[NextNode]->occupied)
-                NextNode = std::rand() % g_Level->AINodes().size() - 1;      
+                NextNode = std::rand() % g_Level->AINodes().size();
 
             BuildPathToNode(NextNode);
         }
@@ -494,6 +511,7 @@ void CEnemy::Attack()
         int currentnode = GetNodeByPosition(PositionCenter());
         int nextYNodeOffset = g_Level->m_nodesXcount;
         int nextXNodeOffset = 1;
+        int NodesToEnemy = abs(currentnode - enemynode);
 
         if (dX < dY) 
         {
@@ -503,29 +521,37 @@ void CEnemy::Attack()
             if (m_enemy->Position().y > Position().y)
             {
                 //проверим все клетки до врага, если их невозможно разрушить, то объедем
-                for (int i = 0; i < (abs(currentnode - enemynode)) / g_Level->m_nodesXcount; ++i) 
+                for (int i = 0; i < NodesToEnemy / g_Level->m_nodesXcount; ++i) 
                 {
-                    auto nodeToCheck = g_Level->AINodes()[currentnode + nextYNodeOffset];
-                    if (nodeToCheck->occupied && nodeToCheck->object_inside && !nodeToCheck->object_inside->Breakable())
+                    int NextNode = currentnode + nextYNodeOffset;
+                    if (NextNode < g_Level->MaxAINodes())
                     {
-                        BuildPathToNode(GetNodeByPosition(m_enemy->Position()));
-                        return;
+                        auto nodeToCheck = g_Level->AINodes()[NextNode];
+                        if (nodeToCheck->occupied && nodeToCheck->object_inside && !nodeToCheck->object_inside->Breakable())
+                        {
+                            BuildPathToNode(GetNodeByPosition(m_enemy->Position()));
+                            return;
+                        }
+                        nextYNodeOffset += g_Level->m_nodesXcount;
                     }
-                    nextYNodeOffset += g_Level->m_nodesXcount;
                 }
                 SetDirection(eDirDown);
             }
             else
             {
-                for (int i = 0; i < (abs(currentnode - enemynode)) / g_Level->m_nodesXcount; ++i)
+                for (int i = 0; i < NodesToEnemy / g_Level->m_nodesXcount; ++i)
                 {
-                    auto nodeToCheck = g_Level->AINodes()[currentnode - nextYNodeOffset];
-                    if (nodeToCheck->occupied && nodeToCheck->object_inside && !nodeToCheck->object_inside->Breakable())
+                    int NextNode = currentnode - nextYNodeOffset;
+                    if (NextNode > 0)
                     {
-                        BuildPathToNode(GetNodeByPosition(m_enemy->Position()));
-                        return;
+                        auto nodeToCheck = g_Level->AINodes()[NextNode];
+                        if (nodeToCheck->occupied && nodeToCheck->object_inside && !nodeToCheck->object_inside->Breakable())
+                        {
+                            BuildPathToNode(GetNodeByPosition(m_enemy->Position()));
+                            return;
+                        }
+                        nextYNodeOffset += g_Level->m_nodesXcount;
                     }
-                    nextYNodeOffset += g_Level->m_nodesXcount;
                 }
                 SetDirection(eDirUp);
             }
@@ -537,29 +563,37 @@ void CEnemy::Attack()
 
             if (m_enemy->Position().x > Position().x)
             {
-                for (int i = 0; i < abs(currentnode - enemynode); ++i)
+                for (int i = 0; i < NodesToEnemy; ++i)
                 {
-                    auto nodeToCheck = g_Level->AINodes()[currentnode + nextXNodeOffset];
-                    if (nodeToCheck->occupied && nodeToCheck->object_inside && !nodeToCheck->object_inside->Breakable())
+                    int NextNode = currentnode + nextYNodeOffset;
+                    if (NextNode < g_Level->MaxAINodes())
                     {
-                        BuildPathToNode(GetNodeByPosition(m_enemy->Position()));
-                        return;
+                        auto nodeToCheck = g_Level->AINodes()[NextNode];
+                        if (nodeToCheck->occupied && nodeToCheck->object_inside && !nodeToCheck->object_inside->Breakable())
+                        {
+                            BuildPathToNode(GetNodeByPosition(m_enemy->Position()));
+                            return;
+                        }
+                        nextXNodeOffset += 1;
                     }
-                    nextXNodeOffset += 1;
                 }
                 SetDirection(eDirRight);
             }
             else
             {
-                for (int i = 0; i < abs(currentnode - enemynode); ++i)
+                for (int i = 0; i < NodesToEnemy; ++i)
                 {
-                    auto nodeToCheck = g_Level->AINodes()[currentnode - nextXNodeOffset];
-                    if (nodeToCheck->occupied && nodeToCheck->object_inside && !nodeToCheck->object_inside->Breakable())
+                    int NextNode = currentnode - nextYNodeOffset;
+                    if (NextNode > 0)
                     {
-                        BuildPathToNode(GetNodeByPosition(m_enemy->Position()));
-                        return;
+                        auto nodeToCheck = g_Level->AINodes()[NextNode];
+                        if (nodeToCheck->occupied && nodeToCheck->object_inside && !nodeToCheck->object_inside->Breakable())
+                        {
+                            BuildPathToNode(GetNodeByPosition(m_enemy->Position()));
+                            return;
+                        }
+                        nextXNodeOffset += 1;
                     }
-                    nextXNodeOffset += 1;
                 }
                 SetDirection(eDirLeft);
             }

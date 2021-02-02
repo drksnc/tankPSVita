@@ -41,6 +41,10 @@ CLevel::~CLevel()
 {
     FreeObjectPool(false);
 
+#if !EMULATOR
+    g_Render->DestroyTexture(m_BGTexture);
+#endif
+
     for (auto &node : AINodes()) 
         delete node;
 
@@ -218,7 +222,7 @@ void CLevel::GenerateAINodes()
     m_nodesXcount = screenWidth / nodeWidth + 0.5f;
     m_nodesYcount = screenHeight / nodeHeight + 0.5f;
 
-    int maxNodes = m_nodesXcount * m_nodesYcount;
+    m_MaxNodes = m_nodesXcount * m_nodesYcount - 1;
 
     for (int j = 0; j < m_nodesYcount; ++j)
     {  
@@ -230,13 +234,8 @@ void CLevel::GenerateAINodes()
             AINode* node = new AINode();
             node->ID = nodeCount;
             node->position.set(nodeX, nodeY);
-            
-            node->neighbors_id.clear();
 
-            if (node->ID % m_nodesXcount + 1 != 0 && node->ID != maxNodes-1) node->neighbors_id.push_back(node->ID + 1);
-            if (node->ID % m_nodesXcount != 0) node->neighbors_id.push_back(node->ID - 1);
-            if (node->ID+1 - m_nodesXcount > 0) node->neighbors_id.push_back(node->ID - m_nodesXcount);
-            if (node->ID + m_nodesXcount < maxNodes-1) node->neighbors_id.push_back(node->ID + m_nodesXcount);
+            AddNeighbors(node);
 
             m_ai_nodes.push_back(node);
             nodeWidth += AI_NODE_WIDTH;
@@ -247,6 +246,21 @@ void CLevel::GenerateAINodes()
         nodeY = nodeHeight;
         nodeHeight += AI_NODE_HEIGHT;   
     }    
+}
+
+void CLevel::AddNeighbors(AINode *pNode)
+{
+    pNode->neighbors_id.clear();
+
+    int TopNeighbor = pNode->ID - m_nodesXcount;
+    int BottomNeighbor = pNode->ID + m_nodesXcount;
+    int LeftNeighbor = pNode->ID - 1;
+    int RightNeighbor = pNode->ID + 1;
+
+    if (RightNeighbor % m_nodesXcount != 0 && RightNeighbor < m_MaxNodes) pNode->neighbors_id.push_back(RightNeighbor);
+    if (LeftNeighbor % m_nodesXcount != 0 && LeftNeighbor > 0) pNode->neighbors_id.push_back(LeftNeighbor);
+    if (TopNeighbor > 0) pNode->neighbors_id.push_back(TopNeighbor);
+    if (BottomNeighbor < m_MaxNodes) pNode->neighbors_id.push_back(BottomNeighbor);
 }
 
 void CLevel::CreateWalls()

@@ -12,7 +12,8 @@ class SDL_Window;
 class SDL_Renderer;
 class CRender;
 class CObjectCollider;
-
+class CMainMenu;
+class CNetwork;
 
 typedef CObjectCollider::CollisionSide collision_side;
 static const int g_iSpeed = 1;
@@ -50,10 +51,12 @@ struct RawLevel
 
 uint32_t CurrentFrame();
 
-extern CControls* g_Control;
-extern CLevel* g_Level;
+extern CControls *g_Control;
+extern CLevel *g_Level;
+extern CMainMenu *g_MainMenu;
+extern CNetwork *g_Network;
+extern CRender *g_Render;
 
-extern CRender* g_Render;
 extern std::vector<RawLevel> g_RawLevels;
 extern uint32_t g_CurrentFrame;
 extern bool    g_bExit;

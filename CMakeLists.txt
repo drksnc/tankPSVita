@@ -32,7 +32,7 @@ set(VITA_VERSION  "01.00")
 ## Flags and includes for building
 # Note that we make sure not to overwrite previous flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g")
 # Optional. You can specify more param.sfo flags this way.
 set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
 
@@ -53,11 +53,14 @@ link_directories(
 add_executable(${PROJECT_NAME}
   src/Systems/controls.cpp
   src/Systems/Level/level.cpp
+  src/Systems/MainMenu/main_menu.cpp
+  src/Systems/Network/network.cpp
   src/Systems/Render/render.cpp
   src/Systems/Utils/vector.cpp
   src/Systems/Utils/config_parser.cpp
   src/Objects/enemy.cpp
   src/Objects/object.cpp
+  src/Objects/spawner.cpp
   src/Objects/bullet.cpp
   src/Objects/actor.cpp
   src/Objects/object_collider.cpp
@@ -76,6 +79,8 @@ target_link_libraries(${PROJECT_NAME}
   vita2d
   SceLibKernel_stub # this line is only for demonstration. It's not needed as
   SceDisplay_stub
+  SceNetCtl_stub
+  SceNet_stub
   SceCtrl_stub                  # the most common stubs are automatically included.
   stdc++
   pthread
@@ -107,6 +112,7 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} ${PROJECT_NAME}.self
   FILE content/sprites/tank0.png content/sprites/tank0.png
   FILE content/sprites/bullet.png content/sprites/bullet.png
   FILE content/sprites/bg/bg0.png content/sprites/bg/bg0.png
+  FILE content/sprites/bg/bg1.png content/sprites/bg/bg1.png
   FILE content/sprites/wall.png content/sprites/wall.png
   FILE content/configs/levels/level0.cfg content/configs/levels/level0.cfg
   FILE content/configs/levels/level1.cfg content/configs/levels/level1.cfg

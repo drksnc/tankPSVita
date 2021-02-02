@@ -4,7 +4,9 @@ enum {
   SCREEN_WIDTH  = 960,
   SCREEN_HEIGHT = 544
 };
+
 #define DEBUG 1
+#define EMULATOR 1
 
 #define SPRITES_DIR "app0:\\content\\sprites\\"
 #define LEVELS_DIR "app0:\\content\\configs\\levels\\"

@@ -61,25 +61,25 @@ int CRender::Init()
 
 void CRender::Render()
 {
-    SDL_SetRenderDrawColor(m_Renderer, 255, 255, 255, 255);
-	SDL_RenderClear(m_Renderer);
+    SDL_SetRenderDrawColor(g_Render->m_Renderer, 255, 255, 255, 255);
+	SDL_RenderClear(g_Render->m_Renderer);
 
-    RenderBackground();
-
-    for (uint8_t it = 0; it < g_Level->MaxObjects(); ++it)
+    if (g_Level)
     {
-        CObject *pObject = g_Level->getObject(it);
+        g_Render->RenderBackground();
 
-        if (!pObject) continue;
-        if (pObject->NeedToRender())
-            QueryTexture(pObject->Texture(), pObject->Rect(), pObject->Position(), pObject->Direction());
-
+        for (auto &pObject : g_Level->Objects())
+        {
+            if (!pObject) continue;
+            if (pObject->NeedToRender())
+                g_Render->QueryTexture(pObject->Texture(), pObject->Rect(), pObject->Position(), pObject->Direction());
 #if DEBUG
-        RenderDebugInfo(pObject);
+//            g_Render->RenderDebugInfo(pObject);
 #endif
+        }
     }
 
-    SDL_RenderPresent(m_Renderer);
+    SDL_RenderPresent(g_Render->m_Renderer);
     SDL_Delay(16);
 
     g_CurrentFrame++;
@@ -134,16 +134,19 @@ double CRender::GetSpriteAngleByDirection(uint8_t direction)
     return 0;
 }
 
-void CRender::SetText(std::string text, Fvector pos)
+void CRender::SetText(std::string text, Fvector pos, SDL_Color* pColor)
 {
-    SDL_Color color = { 0, 0, 255 };
+    SDL_Color color;
+    pColor ? color = *pColor : color = { 0, 0, 255 };
     SDL_Surface* text_surface = TTF_RenderText_Solid(m_font, text.c_str(), color);
     SDL_Texture* text_texture = SDL_CreateTextureFromSurface(m_Renderer, text_surface);
     SDL_Rect dest = { pos.x, pos.y, text_surface->w, text_surface->h };
     SDL_RenderCopy(m_Renderer, text_texture, NULL, &dest);
 
-    //SDL_FreeSurface(text_surface);
-    //SDL_DestroyTexture(text_texture);
+#if !EMULATOR
+    SDL_FreeSurface(text_surface);
+    SDL_DestroyTexture(text_texture);
+#endif
 }
 
 void CRender::RenderBackground()
@@ -170,11 +173,37 @@ void CRender::RenderRect(CObject *obj)
 
 void CRender::RenderDebugInfo(CObject *obj)
 {
-    char hp[BUF_SIZE]; sprintf(hp, "Health %i", obj->Health());
-    char pos[BUF_SIZE]; sprintf(pos, "Pos Y %i X %i", obj->Position().x, obj->Position().y);
-    char frame[BUF_SIZE]; sprintf(frame, "Frame %u", CurrentFrame());
+    // char hp[BUF_SIZE]; sprintf(hp, "Health %i", obj->Health());
+    // char pos[BUF_SIZE]; sprintf(pos, "Pos Y %i X %i", obj->Position().x, obj->Position().y);
+    // char frame[BUF_SIZE]; sprintf(frame, "Frame %u", CurrentFrame());
+    // char id[BUF_SIZE]; sprintf(id, "ID %i", obj->ID());
     //SetText(hp, Fvector().set(obj->Position().x, obj->Position().y - 15));
     //SetText(pos, Fvector().set(obj->Position().x, obj->Position().y - 30));
     //SetText(frame, Fvector().set(obj->Position().x, obj->Position().y - 45));
+    //SetText(frame, Fvector().set(obj->Position().x, obj->Position().y - 45));
     RenderRect(obj);
+  
+    return;
+    
+    int offsetx = AI_NODE_WIDTH;
+    int offsety = AI_NODE_HEIGHT;
+
+    if (g_Level->AINodes().empty())
+        return;
+
+    SDL_SetRenderDrawColor(g_Render->Renderer(), 255, 0, 0, SDL_ALPHA_OPAQUE);
+
+    for (auto &it : g_Level->AINodes())
+    {
+        if (it->occupied)
+        {
+            SDL_RenderDrawLine(g_Render->Renderer(), it->position.x, it->position.y, it->position.x+offsetx, it->position.y);
+            SDL_RenderDrawLine(g_Render->Renderer(), it->position.x, it->position.y, it->position.x, it->position.y+offsety);
+            SDL_RenderDrawLine(g_Render->Renderer(), it->position.x+offsetx, it->position.y+offsety, (it->position.x+offsetx) - offsetx, it->position.y+offsety);
+            SDL_RenderDrawLine(g_Render->Renderer(), it->position.x+offsetx, it->position.y+offsety, it->position.x+offsetx, (it->position.y+offsety) - offsety);  
+        }
+        char buf[BUF_SIZE]; sprintf(buf, "%i", it->ID);; 
+        SetText(buf, it->position);      
+    }
+
 }

@@ -51,6 +51,12 @@ bool CObjectCollider::IsIntersects(CObject* objectA, CObject* objectB, Collision
 
 void CObjectCollider::Update()
 {
+    if (m_object->Type() == eSpawn)
+        return;
+    
+    if (m_object->Type() == eWall)
+        return;
+
     int collide_count = 0;
 
     for (int i = 0; i < g_Level->MaxObjects(); ++i)

@@ -53,6 +53,8 @@ int CSettingsParser::ParseLevelsCfg()
             string sSprite = (char*)ParseConfigSection(cfg_lvl, buf, "sprite", eStr);
             string sPos    = (char*)ParseConfigSection(cfg_lvl, buf, "start_pos", eStr);
             int hp         = (int)ParseConfigSection(cfg_lvl, buf, "hp", eInt);
+            bool bBreakable = (bool)ParseConfigSection(cfg_lvl, buf, "breakable", eInt, (void*)1);
+
             int posX, posY; 
             sscanf(sPos.c_str(), "%d, %d", &posX, &posY);
 
@@ -66,6 +68,7 @@ int CSettingsParser::ParseLevelsCfg()
             raw_obj->bNeedUpdateNodes = (raw_obj->eClass == eActor || raw_obj->eClass == eEnemy);
             raw_obj->sSprite = sSprite;
             raw_obj->iHealth = hp;
+            raw_obj->bBreakable = bBreakable;
             raw_obj->startPosition.set(posX, posY);
         }
 

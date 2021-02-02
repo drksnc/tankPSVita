@@ -1,6 +1,8 @@
 #include "controls.h"
 #include "Systems/Level/level.h"
 #include "Systems/engine.h"
+#include "Systems/MainMenu/main_menu.h"
+#include "Systems/Network/network.h"
 #include "objects/actor.h"
 
 void CControls::Init()
@@ -45,9 +47,6 @@ void CControls::PollControls()
 
 void CControls::ProcControls(int mask)
 {
-    if (!g_Level)
-      return;
-
     if (m_ctrldata.buttons & mask)
       m_uOldButtons & mask ?  OnButtonHold(mask) : OnButtonPressed(mask);
     else if (m_uOldButtons & mask)
@@ -56,6 +55,10 @@ void CControls::ProcControls(int mask)
 
 void CControls::OnButtonPressed(int button)
 {
+    g_MainMenu->OnButtonPressed(button);
+    switch (button)
+    case SCE_CTRL_CIRCLE: g_Network->Connect("localhost");
+
     if (!Actor())
       return;
 
