@@ -102,6 +102,12 @@ void CEnemy::UpdateMove()
 
 void CEnemy::UpdateMoveX()
 {
+    if (m_target_position.x > SCREEN_WIDTH)
+        m_target_position.x = SCREEN_WIDTH;
+
+    if (m_target_position.x < 0)
+        m_target_position.x = 0;
+
     if (Position().x == m_target_position.x)
     {
         m_bHorizontalMove = false;
@@ -134,6 +140,12 @@ void CEnemy::UpdateMoveX()
 
 void CEnemy::UpdateMoveY()
 {
+    if (m_target_position.y > SCREEN_HEIGHT)
+        m_target_position.y = SCREEN_HEIGHT;
+
+    if (m_target_position.y < 0)
+        m_target_position.y = 0;
+
     if (Position().y == m_target_position.y)
     {
         m_bHorizontalMove = true;

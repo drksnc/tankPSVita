@@ -52,6 +52,7 @@ void CActor::OnButtonPressed(int button)
     switch (button)
     {
     case SCE_CTRL_SQUARE: Shoot(); break;
+    case SCE_CTRL_TRIANGLE: LoadLevel(0); break;
     default:
         break;
     }
@@ -94,6 +95,9 @@ void CActor::MoveUp()
 
     SetDirection(eDirUp);
 
+    if (Position().y <= 0)
+        return;
+
     if (IsColliding() && m_CollisionSide & (collision_side::eCSTop))
         return;
 
@@ -106,6 +110,9 @@ void CActor::MoveDown()
         return;
 
     SetDirection(eDirDown);
+
+    if (Position().y + Rect().h >= SCREEN_HEIGHT)
+        return;
 
     if (IsColliding() && m_CollisionSide & (collision_side::eCSBottom))
         return;
@@ -120,6 +127,9 @@ void CActor::MoveLeft()
 
     SetDirection(eDirLeft);
 
+    if (Position().x <= 0)
+        return;
+
     if (IsColliding() && m_CollisionSide & (collision_side::eCSLeft))
         return;
 
@@ -132,6 +142,9 @@ void CActor::MoveRight()
         return;
 
     SetDirection(eDirRight);
+
+    if (Position().x + Rect().w >= SCREEN_WIDTH)
+        return;
 
     if (IsColliding() && m_CollisionSide & (collision_side::eCSRight))
         return;
