@@ -7,6 +7,7 @@
 #include "Objects/object.h"
 #include "Objects/bullet.h"
 #include "Objects/enemy.h"
+#include "Objects/spawner.h"
 #include <sdl2/SDL.h>
 #include <cstdio>
 #include <memory>
@@ -23,6 +24,7 @@ CObject* CLevel::CreateObject(int type)
             return pActor; 
         } break;
     case eEnemy: return new CEnemy(); break;
+    case eSpawn: return new CSpawner(); break;
     default: return new CObject(); break;
     }
 }
@@ -85,6 +87,23 @@ void CLevel::InitializeBG()
 {
     char bg_texture_buf[BUF_SIZE]; sprintf(bg_texture_buf, "%s%s%s", BG_DIR, g_RawLevels[m_current_level_id].background_texture.c_str(), PNG_EXT);
     m_BGTexture = g_Render->LoadTexture(bg_texture_buf); 
+}
+
+CEnemy* CLevel::CreateEnemy(Fvector &pos)
+{
+    RawObject raw_obj;
+    raw_obj.bNeedUpdateNodes = true;
+    raw_obj.eClass = eEnemy;
+    raw_obj.iHealth = 25;
+    raw_obj.sName = "enemy";
+    raw_obj.sSprite = "tank0";
+    raw_obj.startPosition = pos;
+    
+    CObject *pObj = CreateObject(raw_obj.eClass);
+    pObj->OnSpawn(&raw_obj);
+    AddObjectToPool(pObj);
+
+    return dynamic_cast<CEnemy*>(pObj);
 }
 
 void CLevel::Update()
